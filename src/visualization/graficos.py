@@ -23,7 +23,7 @@ def salvar_figura(figura: Figure, nome_arquivo: str, diretorio: Path = DIRETORIO
     diretorio.mkdir(parents=True, exist_ok=True)
     caminho = diretorio / nome_arquivo
     figura.tight_layout()
-    figura.savefig(caminho, dpi=RESOLUCAO_DPI)
+    figura.savefig(caminho, dpi=RESOLUCAO_DPI, bbox_inches="tight")
     plt.close(figura)
     return caminho
 
@@ -61,7 +61,7 @@ def barras_proporcao_alvo(
     eixo.set_title(titulo)
     eixo.set_xlabel(f"Proporção de {alvo}")
     eixo.set_ylabel(categoria)
-    eixo.legend()
+    eixo.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
     return salvar_figura(figura, nome_arquivo, diretorio)
 
 
