@@ -4,6 +4,9 @@ Roda uma vez por quem tem acesso ao projeto GCP; o restante do projeto lê o
 snapshot gerado, sem credencial. A autenticação é por Application Default
 Credentials (somente leitura): `gcloud auth application-default login`.
 
+Este script é a ponte com o GCP: o projeto lê o snapshot por escolha, mas poderia
+ler direto do BigQuery (ver a nota de design em `loader.py`).
+
 Uso:
     GCP_PROJECT_ID=<id-do-projeto> python -m src.preprocessing.export_gold
 """

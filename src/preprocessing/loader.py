@@ -1,4 +1,18 @@
-"""Leitura do snapshot da Gold gravado em `data/`, sem credencial GCP."""
+"""Leitura do snapshot da Gold gravado em `data/`, sem credencial GCP.
+
+NOTA DE DESIGN: este projeto lê arquivos Parquet locais, e não o BigQuery, de
+propósito. A Gold da Fase 2 é efêmera (a infraestrutura é destruída depois do uso
+para não gerar custo) e o snapshot permite que qualquer pessoa rode o projeto sem
+projeto GCP, faturamento nem credencial, com os mesmos dados em toda execução.
+
+Isso poderia ser trocado para ler direto do GCP sem mexer no resto do código:
+`carregar_tabela` é o único ponto de leitura dos dados, e basta recriar a Gold com
+o pipeline do trabalho da Fase 2 (`TECH-CHALLENGE-FASE-2`: `make bronze silver gold`,
+dataset `alfabetizacao_analytics`) e fazer esta função devolver o DataFrame de uma
+consulta ao dataset em vez de ler o arquivo. `export_gold.py` já mostra as
+consultas e as colunas de cada tabela. Os tipos dos DataFrames podem diferir um
+pouco entre as duas fontes e precisariam ser conferidos nos testes.
+"""
 
 from pathlib import Path
 
