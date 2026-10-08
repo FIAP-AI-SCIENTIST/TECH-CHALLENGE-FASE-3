@@ -10,3 +10,21 @@ __pycache__/
 
 # Configuração local que pode conter credenciais
 .env
+
+# Arquivos do macOS
+.DS_Store
+
+# Ambientes virtuais alternativos
+venv/
+env/
+
+# Variaveis de ambiente locais (o exemplo continua versionado)
+.env.*
+!.env.example
+
+# Chaves e credenciais
+*.pem
+*.key
+*credentials*.json
+*service-account*.json
+*sa-key*.json
