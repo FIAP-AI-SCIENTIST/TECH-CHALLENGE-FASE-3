@@ -38,9 +38,9 @@ Tech Challenge da Fase 3 da pós-graduação em AI Scientist da FIAP (Pós Tech)
 
 ## Contexto do problema
 
-O Compromisso Nacional Criança Alfabetizada é uma política pública (União, estados, Distrito Federal e municípios) que busca garantir que toda criança brasileira esteja alfabetizada até o fim do 2º ano do ensino fundamental, com meta de 100% até 2030. O Indicador Criança Alfabetizada mede o percentual de estudantes que atingem o corte de 743 pontos na escala Saeb (Pesquisa Alfabetiza Brasil, INEP).
+Segundo o README da Fase 2 deste grupo, o Compromisso Nacional Criança Alfabetizada é uma política pública (União, estados, Distrito Federal e municípios) que busca garantir que toda criança brasileira esteja alfabetizada até o fim do 2º ano do ensino fundamental, com meta de 100% até 2030. O Indicador Criança Alfabetizada mede o percentual de estudantes que atingem o corte de 743 pontos na escala Saeb. Os dados vêm da Pesquisa Alfabetiza Brasil, do INEP.
 
-Conhecer só os dados atuais não basta: gestores públicos precisam antecipar riscos, identificar regiões vulneráveis e entender quais fatores mais pesam nos indicadores. A Fase 2 entregou o pipeline de engenharia de dados e a camada Gold; esta fase usa essa camada para construir análises e modelos de Machine Learning.
+O enunciado destaca que conhecer só os dados atuais não basta: gestores públicos precisam antecipar riscos, identificar regiões vulneráveis e entender quais fatores têm maior impacto nos indicadores. A Fase 2 entregou o pipeline de engenharia de dados e a camada Gold; esta fase usa essa camada para construir análises e modelos de Machine Learning.
 
 ## Objetivo analítico
 
@@ -155,7 +155,7 @@ Ainda não entregue. O que está decidido para a próxima etapa: comparar Regres
 
 ## Métricas de avaliação
 
-Métrica principal: **AUC-ROC**, porque as duas trilhas têm classes quase balanceadas e a classe positiva é o risco. As métricas da classe positiva (AUC-PR, precisão, recall, F1 e matriz de confusão) acompanham. O módulo `src/evaluation/` que as calcula ainda não foi entregue.
+Métrica principal: **AUC-ROC**, usada para escolher o modelo e ajustar hiperparâmetros (Aulas de Supervisionados 7 e Otimização 4). Acompanham, para a classe positiva (o risco), AUC-PR, precisão, recall, F1 e a matriz de confusão no limiar de 0,5. O módulo `src/evaluation/` que as calcula ainda não foi entregue.
 
 Regra do diagnóstico de overfitting, a ser aplicada na validação antes de abrir o teste: erro = 1 − AUC-ROC, e uma razão de erro validação/treino de 2 ou mais marca overfitting (Aula de Otimização 5).
 
