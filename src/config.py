@@ -53,9 +53,13 @@ ALVO_MUNICIPIO: str = "atingiu_meta"
 
 # Lista PROVISÓRIA de colunas proibidas como feature, usada só pelo baseline
 # descartável do esqueleto. A lista definitiva, por trilha, é da unidade de
-# pré-processamento (requisitos FR3.4).
+# pré-processamento (requisitos FR3.4). `presenca` e `preenchimento_caderno`
+# entram aqui porque, nos dados, caderno em branco implica `alfabetizado` falso
+# (ver `data/README.md`).
 COLUNAS_PROIBIDAS_PROVISORIAS: tuple[str, ...] = (
     "alfabetizado",
+    "presenca",
+    "preenchimento_caderno",
     "proficiencia",
     "id_aluno",
     "id_escola",

@@ -1,0 +1,7 @@
+{
+  "linhas_treino": 3094399.0,
+  "linhas_validacao": 773600.0,
+  "proporcao_positiva": 0.48693213209207137,
+  "auc_roc_dummy": 0.5,
+  "auc_roc_regressao_logistica": 0.6272736127683466
+}
