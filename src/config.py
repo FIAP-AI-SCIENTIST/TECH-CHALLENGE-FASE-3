@@ -5,6 +5,7 @@ Fica fora das camadas de `src/` de propósito: `preprocessing`, `modeling`,
 nenhuma delas.
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 
 # Semente única de todos os `random_state` do projeto. O valor 42 é o que o
@@ -70,4 +71,92 @@ COLUNAS_PROIBIDAS_PROVISORIAS: tuple[str, ...] = (
     "meta_indicador",
     "media_portugues",
     "nivel_alfabetizacao",
+)
+
+
+@dataclass(frozen=True)
+class ColunasTrilha:
+    """Atributos e colunas proibidas de uma trilha supervisionada.
+
+    `proibidas` e `prefixos_proibidos` listam o que nunca pode virar feature
+    (requisitos FR3.4); `atributos` é o que o pré-processador recebe.
+    """
+
+    categoricas: tuple[str, ...]
+    numericas: tuple[str, ...]
+    proibidas: tuple[str, ...]
+    prefixos_proibidos: tuple[str, ...] = ()
+
+    @property
+    def atributos(self) -> tuple[str, ...]:
+        return (*self.categoricas, *self.numericas)
+
+
+# Atributos municipais estáticos (Atlas do Desenvolvimento Humano e região),
+# usados pelas duas trilhas.
+ATRIBUTOS_MUNICIPAIS_CATEGORICOS: tuple[str, ...] = ("sigla_uf", "nome_regiao")
+ATRIBUTOS_MUNICIPAIS_NUMERICOS: tuple[str, ...] = (
+    "capital_uf",
+    "idhm",
+    "idhm_educacao",
+    "idhm_renda",
+    "idhm_longevidade",
+)
+
+# T1 (aluno). Só quem fez a prova. `id_municipio` é o grupo da separação e nunca
+# é feature. As colunas municipais do mesmo ano (taxa, média de português,
+# proporção por nível, nível de alfabetização) são resultados da própria
+# avaliação e ficam proibidas.
+COLUNAS_T1: ColunasTrilha = ColunasTrilha(
+    categoricas=("rede", "caderno", *ATRIBUTOS_MUNICIPAIS_CATEGORICOS),
+    numericas=ATRIBUTOS_MUNICIPAIS_NUMERICOS,
+    proibidas=(
+        "alfabetizado",
+        "nao_alfabetizado",
+        "proficiencia",
+        "presenca",
+        "preenchimento_caderno",
+        "peso_aluno",
+        "id_aluno",
+        "id_escola",
+        "id_municipio",
+        "atingiu_meta",
+        "gap_pontos",
+        "taxa_alfabetizacao",
+        "meta_indicador",
+        "media_portugues",
+        "nivel_alfabetizacao",
+        "percentual_participacao",
+    ),
+    prefixos_proibidos=("proporcao_aluno_nivel_",),
+)
+
+# T2 (município, rede municipal, rótulo de 2024). Atributos de 2023 (defasados),
+# a meta de 2024 (conhecida de antemão) e a folga entre a taxa de 2023 e essa meta.
+# A taxa, a média de português e a participação de 2024 são o resultado que o
+# rótulo mede e ficam proibidas.
+COLUNAS_T2: ColunasTrilha = ColunasTrilha(
+    categoricas=ATRIBUTOS_MUNICIPAIS_CATEGORICOS,
+    numericas=(
+        *ATRIBUTOS_MUNICIPAIS_NUMERICOS,
+        "taxa_alfabetizacao_2023",
+        "media_portugues_2023",
+        "meta_indicador_2024",
+        "folga_2023",
+    ),
+    proibidas=(
+        "atingiu_meta",
+        "nao_atingiu_meta",
+        "gap_pontos",
+        "id_municipio",
+        "rede",
+        "taxa_alfabetizacao_2024",
+        "media_portugues_2024",
+        "percentual_participacao_2024",
+        "nivel_alfabetizacao",
+        "valid_from",
+        "valid_to",
+        "is_current",
+    ),
+    prefixos_proibidos=("proporcao_aluno_nivel_",),
 )
