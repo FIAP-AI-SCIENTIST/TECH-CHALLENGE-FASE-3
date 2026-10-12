@@ -78,7 +78,7 @@ def _numerar_por_idhm(completos: pd.DataFrame, rotulos: np.ndarray) -> np.ndarra
 
 
 def _para_json(valor: Any) -> Any:
-    """Converte tipos do numpy e do pandas em tipos que o JSON aceita; NaN e infinito viram nulo."""
+    """Converte tipos do numpy e do pandas em tipos que o JSON aceita; arredonda os decimais; NaN e infinito viram nulo."""
     if isinstance(valor, dict):
         return {str(chave): _para_json(item) for chave, item in valor.items()}
     if isinstance(valor, (list, tuple, np.ndarray)):
@@ -87,8 +87,10 @@ def _para_json(valor: Any) -> Any:
         return _para_json(valor.to_dict(orient="records"))
     if isinstance(valor, np.generic):
         valor = valor.item()
-    if isinstance(valor, float) and not math.isfinite(valor):
-        return None
+    if isinstance(valor, float):
+        # 6 casas: a ordem das somas em paralelo muda os últimos dígitos (a inércia do K-Means,
+        # por exemplo) entre execuções, e o arquivo não deve variar por causa disso
+        return round(valor, 6) if math.isfinite(valor) else None
     return valor
 
 

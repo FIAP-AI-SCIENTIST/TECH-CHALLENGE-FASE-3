@@ -204,7 +204,8 @@ def test_avaliacao_do_dbscan_e_coerente_com_os_outliers_apontados(execucao) -> N
     _, relatorios, _ = execucao
     conteudo = _json(relatorios)
     dbscan = conteudo["avaliacao"]["dbscan"]
-    assert dbscan["pct_ruido"] == pytest.approx(conteudo["dbscan"]["n_outliers"] / conteudo["n_municipios_agrupados"])
+    esperado = conteudo["dbscan"]["n_outliers"] / conteudo["n_municipios_agrupados"]
+    assert dbscan["pct_ruido"] == pytest.approx(esperado, abs=1e-6)  # o JSON guarda 6 casas decimais
     assert dbscan["n_clusters"] == 3  # os três grupos reais, com os outliers fora
     assert dbscan["silhouette"] > 0.5 and dbscan["davies_bouldin"] < 1.0  # calculados sem o ruído
 
