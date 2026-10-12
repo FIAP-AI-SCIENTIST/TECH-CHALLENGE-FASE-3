@@ -1,6 +1,6 @@
 # Agrupamento de municípios (trilha T3)
 
-Fragmento do README (requisitos FR7.1, FR7.2 e a tabela usada em FR9.3), consolidado na unidade de documentação. Os números vêm de `reports/agrupamento_municipios.json`, `reports/perfil_clusters.csv`, `reports/clusters_por_regiao.csv` e `reports/clusters_municipios.csv`, gerados por `python -m src.modeling.agrupamento_municipios`; os percentuais por região e a concordância entre algoritmos são contas sobre esses arquivos.
+Fragmento do README (requisitos FR7.1, FR7.2 e a tabela usada em FR9.3), consolidado na unidade de documentação. Os números vêm de `reports/agrupamento_municipios.json`, `reports/perfil_clusters.csv`, `reports/clusters_por_regiao.csv`, `reports/perfil_clusters_k3.csv`, `reports/clusters_por_regiao_k3.csv` e `reports/clusters_municipios.csv`, gerados por `python -m src.modeling.agrupamento_municipios`; os percentuais por região e por UF e a concordância entre algoritmos são contas sobre esses arquivos.
 
 ## O que foi agrupado
 
@@ -65,9 +65,58 @@ O cluster 0 é 71,6% Nordeste e 13,6% Norte; o cluster 1 é 45,5% Sudeste, 33,6%
 
 - **Os municípios formam um contínuo, não grupos bem separados.** Indícios: o silhouette do melhor K é 0,42 e cai de K=2 para K=3 (0,36) e depois para perto de 0,22; o cotovelo é suave; na figura do PCA 2D os dois clusters são uma nuvem única cortada perto do centro do primeiro componente; e o DBSCAN só acha dois clusters em um dos valores de ε testados com ruído abaixo de 10%. O K=2 é um recorte útil, de "menor" e "maior" perfil, e não dois tipos distintos de município.
 - **O DBSCAN é frágil.** Dos 7 valores de ε varridos, 3 dão dois ou mais clusters (com 29%, 22% e 8,6% de ruído) e os demais dão um só; só o de 0,5598 respeita o limite de 10% de ruído, com silhouette de 0,2688. Os 447 municípios marcados como outliers (8,6%) são os de baixa densidade nesse ε, em todas as regiões (Nordeste 218, Sul 81, Sudeste 75, Norte 53, Centro-Oeste 20) e nos dois clusters (306 no 0 e 141 no 1). Não são necessariamente anomalias nem casos a investigar.
-- **Quem precisar de mais de dois perfis** pode usar K=3, mas os dados não sustentam grupos bem separados (silhouette de 0,36).
+- **Há uma leitura complementar com K=3**, descrita na seção seguinte: ela não é um refinamento do K=2 e destaca um grupo que o K=2 esconde, mas é menos firme (silhouette de 0,36) e foi escolhida depois de ver os resultados.
 - **Descrição, não causa.** Os clusters resumem o que os municípios têm em comum nos seis atributos; não dizem por que são assim nem o efeito de qualquer política.
 - **Dois anos só** (2023 e 2024) e 24 UFs; os 130 municípios sem dados completos não têm cluster.
+
+## Leitura complementar com K=3 (exploratória)
+
+O K=3 foi calculado como complemento, a pedido do usuário, **depois de ver o resultado**. Ele **não vem da regra do K**, que escolheu K=2, e por isso o JSON o marca com `escolhido_pela_regra: false`: é uma leitura exploratória, e não uma descoberta de tipos de município. Arquivos: a coluna `cluster_k3` de `reports/clusters_municipios.csv`, `reports/perfil_clusters_k3.csv`, `reports/clusters_por_regiao_k3.csv` e `images/agrupamento_pca_2d_k3.png`.
+
+### Quanto o K=3 é firme, comparado ao K=2
+
+| | K=2 (regra) | K=3 (complementar) |
+|---|---|---|
+| Silhouette | 0,4177 | 0,3642 |
+| Davies-Bouldin (menor é melhor) | 0,9609 | 1,0699 |
+| Concordância entre K-Means e Ward | 95,2% | 80,6% |
+| Municípios na fronteira (silhouette abaixo de 0,1) | 6,2% | 9,7% |
+| Silhouette médio de cada cluster | 0,352 e 0,467 | 0,363, 0,257 e 0,410 |
+
+O K=3 é menos firme em todas as medidas, e o cluster 1 é o mais difuso (silhouette médio de 0,257).
+
+### O que o K=3 mostra, e o K=2 esconde
+
+| Cluster | Municípios | IDHM | IDHM educação | IDHM renda | IDHM longevidade | Taxa 2023 | Taxa 2024 | Capitais |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 1.423 | 0,587 | 0,474 | 0,565 | 0,759 | 39,7 | 43,7 | 0,0% |
+| 1 | 1.121 | 0,608 | 0,502 | 0,583 | 0,773 | 74,4 | 78,9 | 0,0% |
+| 2 | 2.678 | 0,719 | 0,629 | 0,708 | 0,835 | 65,6 | 67,0 | 0,8% |
+
+O K=3 **não é o K=2 com mais um corte**: ele separa o grupo de IDHM baixo pela alfabetização. O cluster 1 reúne 1.121 municípios com **IDHM baixo** (0,608, perto dos 0,587 do cluster 0) e **taxa de alfabetização alta** (74,4% em 2023, acima dos 65,6% do cluster de IDHM alto). Os grupos do K=2 não se aninham nos do K=3:
+
+| | K=3 cluster 0 | K=3 cluster 1 | K=3 cluster 2 |
+|---|---|---|---|
+| K=2 cluster 0 (menor IDHM) | 1.407 | 832 | 7 |
+| K=2 cluster 1 (maior IDHM) | 16 | 289 | 2.671 |
+
+Percentual de cada região em cada cluster do K=3 (`reports/clusters_por_regiao_k3.csv`):
+
+| Região | Municípios | Cluster 0 | Cluster 1 | Cluster 2 |
+|---|---|---|---|---|
+| Nordeste | 1.735 | 1.054 (60,7%) | 600 (34,6%) | 81 (4,7%) |
+| Norte | 388 | 254 (65,5%) | 66 (17,0%) | 68 (17,5%) |
+| Sudeste | 1.589 | 66 (4,2%) | 305 (19,2%) | 1.218 (76,7%) |
+| Centro-Oeste | 459 | 30 (6,5%) | 66 (14,4%) | 363 (79,1%) |
+| Sul | 1.051 | 19 (1,8%) | 84 (8,0%) | 948 (90,2%) |
+
+O cluster 1 está concentrado em poucos estados, e dá para conferir agrupando `clusters_municipios.csv` por `sigla_uf`: o **Ceará** tem 173 dos seus 183 municípios nele (94,5%); Minas Gerais tem 274 (34,2% dos 801), o Piauí 109 (49,1%), o Maranhão 100 (46,3%) e Pernambuco 95 (51,6%). Esses cinco estados juntam 751 dos 1.121 municípios do cluster (67,0%). O Ceará é também o estado com a menor proporção de municípios que não atingiram a meta de 2024 no modelo do município (8,7%), o que combina com a ideia de que, nesses municípios, a alfabetização acompanha o estado. Isto descreve onde estão e não explica por quê.
+
+### O que o K=3 não é
+
+- **Não é uma tipologia.** Os municípios continuam formando um contínuo; o K=3 é outro recorte dele, que destaca o grupo de IDHM baixo e alfabetização alta.
+- **Não substitui o K=2.** A atribuição oficial, a do K da regra, continua sendo a do K=2; o K=3 entra como complemento exploratório na resposta de negócio.
+- **Descrição, não causa.**
 
 ## Decisões e fontes
 
@@ -84,5 +133,7 @@ O cluster 0 é 71,6% Nordeste e 13,6% Norte; o cluster 1 é 45,5% Sudeste, 33,6%
 | Grade de ε nos quantis 0,5 a 0,99 da distância k; ε com 2 a 10 clusters e até 10% de ruído | Decisão do time, fixada no plano antes dos resultados |
 | Clusters numerados do menor para o maior IDHM médio | Decisão do time |
 | Sem dendrograma | Decisão do time (5.222 pontos) |
+| K=3 como leitura complementar, marcada como exploratória | Decisão do time, a pedido do usuário depois de ver os resultados; não vem da regra do K |
+| Silhouette por município (média por cluster e percentual na fronteira, com silhouette abaixo de 0,1) | Aula: Não supervisionados 2 (definição do silhouette por ponto); o limite de 0,1 é decisão do time |
 
 Custo da execução (máquina de 10 núcleos e 16 GiB): cerca de 5 s.
