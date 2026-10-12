@@ -155,6 +155,7 @@
   },
   "kmeans": {
     "regra": "K de maior silhouette médio",
+    "escolhido_pela_regra": true,
     "k_escolhido": 2,
     "varredura": [
       {
@@ -278,7 +279,12 @@
       "n_clusters": 2,
       "pct_ruido": 0.0,
       "silhouette": 0.417688,
-      "davies_bouldin": 0.960947
+      "davies_bouldin": 0.960947,
+      "silhouette_por_cluster": {
+        "0": 0.352493,
+        "1": 0.466892
+      },
+      "pct_fronteira": 0.062045
     },
     "ward": {
       "n_clusters": 2,
@@ -291,6 +297,29 @@
       "pct_ruido": 0.085599,
       "silhouette": 0.268782,
       "davies_bouldin": 0.621246
+    }
+  },
+  "complementar": {
+    "descricao": "leitura exploratória com K=3, escolhida depois de ver os resultados e não pela regra do K",
+    "k": 3,
+    "escolhido_pela_regra": false,
+    "avaliacao": {
+      "n_clusters": 3,
+      "pct_ruido": 0.0,
+      "silhouette": 0.364173,
+      "davies_bouldin": 1.069937,
+      "silhouette_por_cluster": {
+        "0": 0.363215,
+        "1": 0.256617,
+        "2": 0.409705
+      },
+      "pct_fronteira": 0.097281
+    },
+    "concordancia_com_ward": 0.806013,
+    "tamanhos": {
+      "0": 1423,
+      "1": 1121,
+      "2": 2678
     }
   }
 }
