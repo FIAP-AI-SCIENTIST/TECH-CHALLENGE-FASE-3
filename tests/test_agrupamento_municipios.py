@@ -207,3 +207,21 @@ def test_avaliacao_do_dbscan_e_coerente_com_os_outliers_apontados(execucao) -> N
     assert dbscan["pct_ruido"] == pytest.approx(conteudo["dbscan"]["n_outliers"] / conteudo["n_municipios_agrupados"])
     assert dbscan["n_clusters"] == 3  # os três grupos reais, com os outliers fora
     assert dbscan["silhouette"] > 0.5 and dbscan["davies_bouldin"] < 1.0  # calculados sem o ruído
+
+
+def _numeros(valor):
+    if isinstance(valor, dict):
+        for item in valor.values():
+            yield from _numeros(item)
+    elif isinstance(valor, list):
+        for item in valor:
+            yield from _numeros(item)
+    elif isinstance(valor, float):
+        yield valor
+
+
+def test_json_arredonda_os_decimais_para_nao_variar_com_o_ruido_do_ponto_flutuante(execucao) -> None:
+    # a ordem das somas em paralelo muda os últimos dígitos da inércia do K-Means entre execuções
+    _, relatorios, _ = execucao
+    numeros = list(_numeros(_json(relatorios)))
+    assert numeros and all(x == round(x, 6) for x in numeros)
