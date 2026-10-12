@@ -145,12 +145,12 @@
     "variancia_alvo": 0.95,
     "n_componentes": 4,
     "variancia_acumulada": [
-      0.6311937253164278,
-      0.86778001192029,
-      0.9284866330372116,
-      0.978754752250124,
-      0.9999426684949945,
-      0.9999999999999999
+      0.631194,
+      0.86778,
+      0.928487,
+      0.978755,
+      0.999943,
+      1.0
     ]
   },
   "kmeans": {
@@ -159,57 +159,57 @@
     "varredura": [
       {
         "k": 2,
-        "inercia": 15773.106810240686,
-        "silhouette": 0.4176883262638974,
-        "davies_bouldin": 0.9609465925685641
+        "inercia": 15773.10681,
+        "silhouette": 0.417688,
+        "davies_bouldin": 0.960947
       },
       {
         "k": 3,
-        "inercia": 12120.833870699933,
-        "silhouette": 0.3641732917233422,
-        "davies_bouldin": 1.0699367483706077
+        "inercia": 12120.833871,
+        "silhouette": 0.364173,
+        "davies_bouldin": 1.069937
       },
       {
         "k": 4,
-        "inercia": 10264.017880238447,
-        "silhouette": 0.27237840401576446,
-        "davies_bouldin": 1.2545942465107371
+        "inercia": 10264.01788,
+        "silhouette": 0.272378,
+        "davies_bouldin": 1.254594
       },
       {
         "k": 5,
-        "inercia": 8860.190994059234,
-        "silhouette": 0.2719579266123708,
-        "davies_bouldin": 1.1322205181082603
+        "inercia": 8860.190994,
+        "silhouette": 0.271958,
+        "davies_bouldin": 1.132221
       },
       {
         "k": 6,
-        "inercia": 8140.812375702464,
-        "silhouette": 0.24100394171236372,
-        "davies_bouldin": 1.2852004143472977
+        "inercia": 8140.812376,
+        "silhouette": 0.241004,
+        "davies_bouldin": 1.2852
       },
       {
         "k": 7,
-        "inercia": 7505.704719172112,
-        "silhouette": 0.2265228616196518,
-        "davies_bouldin": 1.300250144176502
+        "inercia": 7505.704719,
+        "silhouette": 0.226523,
+        "davies_bouldin": 1.30025
       },
       {
         "k": 8,
-        "inercia": 6955.6128216103825,
-        "silhouette": 0.22427883426683828,
-        "davies_bouldin": 1.2351222132148814
+        "inercia": 6955.612822,
+        "silhouette": 0.224279,
+        "davies_bouldin": 1.235122
       },
       {
         "k": 9,
-        "inercia": 6581.070973645953,
-        "silhouette": 0.22591322603117178,
-        "davies_bouldin": 1.2538036890218474
+        "inercia": 6581.070974,
+        "silhouette": 0.225913,
+        "davies_bouldin": 1.253804
       },
       {
         "k": 10,
-        "inercia": 6262.629619790349,
-        "silhouette": 0.2195316750584196,
-        "davies_bouldin": 1.3009254704849273
+        "inercia": 6262.62962,
+        "silhouette": 0.219532,
+        "davies_bouldin": 1.300925
       }
     ],
     "tamanhos": {
@@ -219,54 +219,54 @@
   },
   "dbscan": {
     "min_pts": 8,
-    "eps_escolhido": 0.5598015963593084,
+    "eps_escolhido": 0.559802,
     "varredura": [
       {
-        "eps": 0.4238370566488171,
+        "eps": 0.423837,
         "n_clusters": 9,
-        "pct_ruido": 0.289544235924933,
-        "silhouette": -0.3104664110192892,
-        "davies_bouldin": 1.021436535003148
+        "pct_ruido": 0.289544,
+        "silhouette": -0.310466,
+        "davies_bouldin": 1.021437
       },
       {
-        "eps": 0.45701892999009575,
+        "eps": 0.457019,
         "n_clusters": 6,
-        "pct_ruido": 0.21754117196476447,
-        "silhouette": -0.13401885833243316,
-        "davies_bouldin": 0.8726401369282012
+        "pct_ruido": 0.217541,
+        "silhouette": -0.134019,
+        "davies_bouldin": 0.87264
       },
       {
-        "eps": 0.49797748307466844,
+        "eps": 0.497977,
         "n_clusters": 1,
-        "pct_ruido": 0.14860206817311375,
+        "pct_ruido": 0.148602,
         "silhouette": null,
         "davies_bouldin": null
       },
       {
-        "eps": 0.5598015963593084,
+        "eps": 0.559802,
         "n_clusters": 2,
-        "pct_ruido": 0.0855993872079663,
-        "silhouette": 0.2687818465476465,
-        "davies_bouldin": 0.6212463366189231
+        "pct_ruido": 0.085599,
+        "silhouette": 0.268782,
+        "davies_bouldin": 0.621246
       },
       {
-        "eps": 0.6700906998586974,
+        "eps": 0.670091,
         "n_clusters": 1,
-        "pct_ruido": 0.03561853695901953,
+        "pct_ruido": 0.035619,
         "silhouette": null,
         "davies_bouldin": null
       },
       {
-        "eps": 0.7771650200480124,
+        "eps": 0.777165,
         "n_clusters": 1,
-        "pct_ruido": 0.013787820758330141,
+        "pct_ruido": 0.013788,
         "silhouette": null,
         "davies_bouldin": null
       },
       {
-        "eps": 1.0912360979739282,
+        "eps": 1.091236,
         "n_clusters": 1,
-        "pct_ruido": 0.0017234775947912676,
+        "pct_ruido": 0.001723,
         "silhouette": null,
         "davies_bouldin": null
       }
@@ -277,20 +277,20 @@
     "kmeans": {
       "n_clusters": 2,
       "pct_ruido": 0.0,
-      "silhouette": 0.4176883262638974,
-      "davies_bouldin": 0.9609465925685641
+      "silhouette": 0.417688,
+      "davies_bouldin": 0.960947
     },
     "ward": {
       "n_clusters": 2,
       "pct_ruido": 0.0,
-      "silhouette": 0.4121623835552629,
-      "davies_bouldin": 0.9782469295652225
+      "silhouette": 0.412162,
+      "davies_bouldin": 0.978247
     },
     "dbscan": {
       "n_clusters": 2,
-      "pct_ruido": 0.0855993872079663,
-      "silhouette": 0.2687818465476465,
-      "davies_bouldin": 0.6212463366189231
+      "pct_ruido": 0.085599,
+      "silhouette": 0.268782,
+      "davies_bouldin": 0.621246
     }
   }
 }
