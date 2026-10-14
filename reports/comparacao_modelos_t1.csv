@@ -1,0 +1,6 @@
+modelo,auc_roc_media,auc_roc_desvio,auc_roc_treino_media,lacuna_auc,razao_erro,overfitting
+gradient_boosting,0.6278,0.0111,0.6481,0.0203,1.0577,False
+random_forest,0.6273,0.0146,0.6543,0.027,1.078,False
+regressao_logistica,0.6266,0.014,0.6338,0.0072,1.0196,False
+regressao_logistica_padrao,0.6266,0.0139,0.6338,0.0072,1.0197,False
+dummy,0.5,0.0,0.5,0.0,1.0,False
