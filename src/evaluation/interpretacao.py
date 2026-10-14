@@ -80,15 +80,16 @@ def importancia_por_permutacao(
 def valores_shap(modelo: Pipeline, atributos: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Valores SHAP (log-odds) de cada linha e os atributos transformados que os geraram.
 
-    A Regressão Logística usa o `LinearExplainer`, com até 1.000 linhas dos próprios dados como fundo; as
+    A Regressão Logística usa o `LinearExplainer`, com até 1.000 linhas dos próprios dados,
+    sorteadas com a semente do projeto, como fundo; as
     árvores usam o `TreeExplainer`. Os dois explicam o estimador sobre a saída do
     pré-processador, então as colunas são as do espaço transformado.
     """
     transformados = modelo.named_steps["pre_processamento"].transform(atributos)
     estimador = modelo.named_steps["estimador"]
     if isinstance(estimador, LogisticRegression):
-        fundo = shap.maskers.Independent(transformados, max_samples=MAXIMO_FUNDO_SHAP)
-        explicador = shap.LinearExplainer(estimador, fundo)
+        fundo = transformados.sample(n=min(len(transformados), MAXIMO_FUNDO_SHAP), random_state=SEED)
+        explicador = shap.LinearExplainer(estimador, shap.maskers.Independent(fundo, max_samples=len(fundo)))
     else:
         explicador = shap.TreeExplainer(estimador)
     valores = np.asarray(explicador.shap_values(transformados))
