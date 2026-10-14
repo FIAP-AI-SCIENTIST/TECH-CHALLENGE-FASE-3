@@ -23,6 +23,11 @@ COR_REFERENCIA: str = "#8a8984"
 CHAVES_MATRIZ: tuple[str, ...] = ("verdadeiro_negativo", "falso_positivo", "falso_negativo", "verdadeiro_positivo")
 
 
+def _decimal(valor: float, casas: int) -> str:
+    """Número com vírgula decimal e ponto de milhar, como no resto do projeto."""
+    return f"{valor:,.{casas}f}".replace(",", "_").replace(".", ",").replace("_", ".")
+
+
 def _validar_tamanhos(y_verdadeiro: Sequence[int], probabilidades: Sequence[float]) -> tuple[np.ndarray, np.ndarray]:
     y = np.asarray(y_verdadeiro)
     probabilidade = np.asarray(probabilidades, dtype=float)
@@ -61,7 +66,7 @@ def matriz_confusao(
             eixo.text(
                 coluna,
                 linha,
-                f"{valores[linha, coluna]:,}\n({percentual_da_linha[linha, coluna]:.1%})".replace(",", "."),
+                f"{_decimal(valores[linha, coluna], 0)}\n({_decimal(100 * percentual_da_linha[linha, coluna], 1)}%)",
                 ha="center",
                 va="center",
                 color="white" if escuro else "#0b0b0b",
@@ -88,7 +93,7 @@ def curva_roc(
     auc = roc_auc_score(y, probabilidade)
 
     figura, eixo = plt.subplots(figsize=(5.5, 5))
-    eixo.plot(falsos_positivos, verdadeiros_positivos, color=COR_SERIE_1, linewidth=2, label=f"{nome_modelo} (AUC-ROC {auc:.3f})")
+    eixo.plot(falsos_positivos, verdadeiros_positivos, color=COR_SERIE_1, linewidth=2, label=f"{nome_modelo} (AUC-ROC {_decimal(auc, 3)})")
     eixo.plot([0, 1], [0, 1], color=COR_REFERENCIA, linewidth=1.5, linestyle="--", label="Acaso (AUC-ROC 0,500)")
     eixo.set_xlim(0, 1)
     eixo.set_ylim(0, 1)
@@ -123,7 +128,7 @@ def distribuicao_probabilidades(
         da_classe = probabilidade[y == classe]
         pesos = np.full(len(da_classe), 1 / max(len(da_classe), 1))
         eixo.hist(da_classe, bins=bordas, weights=pesos, color=cor, alpha=0.55, label=f"Real: {rotulos[classe]}")
-    eixo.axvline(limiar, color="#0b0b0b", linewidth=1.5, linestyle="--", label=f"Limiar {limiar:.1f}".replace(".", ","))
+    eixo.axvline(limiar, color="#0b0b0b", linewidth=1.5, linestyle="--", label=f"Limiar {_decimal(limiar, 1)}")
     eixo.set_xlim(0, 1)
     eixo.set_xlabel(f"Probabilidade prevista de “{rotulos[1]}”")
     eixo.set_ylabel("Proporção dentro da classe")
