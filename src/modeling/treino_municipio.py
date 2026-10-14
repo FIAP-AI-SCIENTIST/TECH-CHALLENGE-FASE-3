@@ -1,7 +1,8 @@
 """Treino da trilha T2: o município (rede municipal) vai atingir a meta de 2024?
 
 `python -m src.modeling.treino_municipio` lê o snapshot, monta a tabela de T2, roda
-`treinar_trilha` e grava `reports/treino_t2.json` e `reports/comparacao_modelos_t2.csv`.
+`treinar_trilha` e grava `reports/treino_t2.json`, `reports/comparacao_modelos_t2.csv` e o modelo
+final em `models/modelo_t2.joblib`.
 A tabela tem cerca de 5 mil municípios, então a busca roda sem amostra.
 
 Os três algoritmos são os ensinados (Regressão Logística, Random Forest e Gradient
@@ -13,7 +14,7 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from src.config import COLUNAS_T2, SEED
-from src.modeling.treino import Candidato, gravar_relatorio, treinar_trilha
+from src.modeling.treino import Candidato, gravar_modelo, gravar_relatorio, treinar_trilha
 from src.preprocessing.loader import carregar_tabela
 from src.preprocessing.tabelas import TabelaModelagem, construir_tabela_municipio
 
@@ -64,12 +65,14 @@ def carregar_tabela_t2() -> TabelaModelagem:
 
 
 def executar() -> dict:
-    """Treina T2, grava o relatório em `reports/` e imprime o resumo."""
-    relatorio, _ = treinar_trilha(COLUNAS_T2, carregar_tabela_t2(), CANDIDATOS_T2)
+    """Treina T2, grava o relatório em `reports/` e o modelo em `models/` e imprime o resumo."""
+    relatorio, modelo = treinar_trilha(COLUNAS_T2, carregar_tabela_t2(), CANDIDATOS_T2)
     caminho_json, caminho_csv = gravar_relatorio(relatorio, PREFIXO_RELATORIO)
+    caminho_modelo = gravar_modelo(modelo, PREFIXO_RELATORIO)
     print(f"Modelo escolhido: {relatorio['modelo_escolhido']}")
     print(f"AUC-ROC no teste: {relatorio['teste']['auc_roc']}")
     print(f"Relatório: {caminho_json} e {caminho_csv}")
+    print(f"Modelo: {caminho_modelo}")
     return relatorio
 
 
