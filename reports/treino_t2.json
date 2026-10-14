@@ -1,0 +1,138 @@
+{
+  "tamanhos": {
+    "treino": {
+      "linhas": 3135,
+      "municipios": 3135,
+      "proporcao_positiva": 0.4708
+    },
+    "validacao": {
+      "linhas": 1045,
+      "municipios": 1045,
+      "proporcao_positiva": 0.4689
+    },
+    "teste": {
+      "linhas": 1046,
+      "municipios": 1046,
+      "proporcao_positiva": 0.457
+    }
+  },
+  "baselines": {
+    "dummy": {
+      "auc_roc_media": 0.5,
+      "auc_roc_desvio": 0.0,
+      "auc_roc_treino_media": 0.5
+    },
+    "regressao_logistica": {
+      "auc_roc_media": 0.78,
+      "auc_roc_desvio": 0.0147,
+      "auc_roc_treino_media": 0.7903
+    }
+  },
+  "candidatos": {
+    "regressao_logistica": {
+      "melhores_parametros": {
+        "estimador__C": 10.0
+      },
+      "auc_roc_cv": 0.78
+    },
+    "random_forest": {
+      "melhores_parametros": {
+        "estimador__n_estimators": 300,
+        "estimador__min_samples_leaf": 1,
+        "estimador__max_depth": 10
+      },
+      "auc_roc_cv": 0.7707
+    },
+    "gradient_boosting": {
+      "melhores_parametros": {
+        "estimador__n_estimators": 200,
+        "estimador__max_depth": 2,
+        "estimador__learning_rate": 0.1
+      },
+      "auc_roc_cv": 0.7725
+    }
+  },
+  "comparacao": [
+    {
+      "modelo": "regressao_logistica",
+      "auc_roc_media": 0.78,
+      "auc_roc_desvio": 0.0149,
+      "auc_roc_treino_media": 0.7906,
+      "lacuna_auc": 0.0106,
+      "razao_erro": 1.0507,
+      "overfitting": false
+    },
+    {
+      "modelo": "regressao_logistica_padrao",
+      "auc_roc_media": 0.78,
+      "auc_roc_desvio": 0.0147,
+      "auc_roc_treino_media": 0.7903,
+      "lacuna_auc": 0.0103,
+      "razao_erro": 1.0493,
+      "overfitting": false
+    },
+    {
+      "modelo": "gradient_boosting",
+      "auc_roc_media": 0.7725,
+      "auc_roc_desvio": 0.0138,
+      "auc_roc_treino_media": 0.8478,
+      "lacuna_auc": 0.0753,
+      "razao_erro": 1.4943,
+      "overfitting": false
+    },
+    {
+      "modelo": "random_forest",
+      "auc_roc_media": 0.7707,
+      "auc_roc_desvio": 0.0133,
+      "auc_roc_treino_media": 0.9527,
+      "lacuna_auc": 0.182,
+      "razao_erro": 4.8462,
+      "overfitting": true
+    },
+    {
+      "modelo": "dummy",
+      "auc_roc_media": 0.5,
+      "auc_roc_desvio": 0.0,
+      "auc_roc_treino_media": 0.5,
+      "lacuna_auc": 0.0,
+      "razao_erro": 1.0,
+      "overfitting": false
+    }
+  ],
+  "modelo_escolhido": "regressao_logistica",
+  "validacao": {
+    "metricas": {
+      "auc_roc": 0.7517,
+      "auc_pr": 0.73,
+      "precisao": 0.6751,
+      "recall": 0.6571,
+      "f1": 0.666,
+      "matriz_confusao": {
+        "verdadeiro_negativo": 400,
+        "falso_positivo": 155,
+        "falso_negativo": 168,
+        "verdadeiro_positivo": 322
+      }
+    },
+    "diagnostico": {
+      "erro_treino": 0.2105,
+      "erro_validacao": 0.2483,
+      "razao_erro": 1.1796,
+      "lacuna_auc": 0.0378,
+      "overfitting": false
+    }
+  },
+  "teste": {
+    "auc_roc": 0.7955,
+    "auc_pr": 0.7671,
+    "precisao": 0.6898,
+    "recall": 0.6653,
+    "f1": 0.6773,
+    "matriz_confusao": {
+      "verdadeiro_negativo": 425,
+      "falso_positivo": 143,
+      "falso_negativo": 160,
+      "verdadeiro_positivo": 318
+    }
+  }
+}
