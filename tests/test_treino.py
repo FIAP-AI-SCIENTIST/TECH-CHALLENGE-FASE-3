@@ -7,7 +7,15 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from src.config import ColunasTrilha
-from src.modeling.treino import Candidato, amostrar, gravar_relatorio, treinar_trilha
+from src.modeling.treino import (
+    Candidato,
+    amostrar,
+    carregar_modelo,
+    conjunto_de_teste,
+    gravar_modelo,
+    gravar_relatorio,
+    treinar_trilha,
+)
 from src.preprocessing.tabelas import TabelaModelagem
 
 TRILHA = ColunasTrilha(categoricas=("cor", "nome_regiao"), numericas=("x",), proibidas=())
@@ -111,3 +119,25 @@ def test_gravar_relatorio_escreve_o_json_e_a_tabela_de_comparacao(tmp_path) -> N
     assert json.loads(caminho_json.read_text(encoding="utf-8"))["modelo_escolhido"] == relatorio["modelo_escolhido"]
     comparacao = pd.read_csv(caminho_csv)
     assert list(comparacao["modelo"]) == [linha["modelo"] for linha in relatorio["comparacao"]]
+
+
+def test_modelo_gravado_e_carregado_preve_igual_ao_original(tmp_path) -> None:
+    tabela = _tabela()
+    _, modelo = treinar_trilha(TRILHA, tabela, CANDIDATOS)
+    caminho = gravar_modelo(modelo, "teste", tmp_path)
+    carregado = carregar_modelo("teste", tmp_path)
+    assert caminho.exists()
+    assert np.allclose(modelo.predict_proba(tabela.atributos)[:, 1], carregado.predict_proba(tabela.atributos)[:, 1])
+
+
+def test_carregar_modelo_inexistente_explica_como_gerar(tmp_path) -> None:
+    with pytest.raises(FileNotFoundError, match="python -m src.modeling.treino_"):
+        carregar_modelo("inexistente", tmp_path)
+
+
+def test_conjunto_de_teste_e_o_mesmo_que_o_treino_avaliou() -> None:
+    tabela = _tabela()
+    relatorio, _ = treinar_trilha(TRILHA, tabela, CANDIDATOS, max_linhas_treino=200, max_linhas_validacao=100)
+    teste = conjunto_de_teste(tabela)
+    assert len(teste.alvo) == relatorio["tamanhos"]["teste"]["linhas"]
+    assert teste.grupos.nunique() == relatorio["tamanhos"]["teste"]["municipios"]
