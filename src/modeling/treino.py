@@ -15,14 +15,16 @@ aluno, grande demais para a busca: a amostra é sorteada depois da separação, 
 o teste é sempre avaliado inteiro.
 """
 
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
 from sklearn.base import BaseEstimator, clone
 from sklearn.pipeline import Pipeline
 
-from src.config import SEED, ColunasTrilha
+from src.config import DIRETORIO_RELATORIOS, SEED, ColunasTrilha
 from src.evaluation.diagnostico import comparar_modelos, diagnosticar_overfitting, melhor_modelo
 from src.evaluation.metricas import calcular_metricas
 from src.modeling.pipeline_modelo import montar_pipeline
@@ -164,3 +166,13 @@ def treinar_trilha(
         "teste": metricas_teste,
     }
     return _arredondar(relatorio), modelo_final
+
+
+def gravar_relatorio(relatorio: dict[str, Any], prefixo: str, diretorio: Path = DIRETORIO_RELATORIOS) -> tuple[Path, Path]:
+    """Grava `treino_<prefixo>.json` e `comparacao_modelos_<prefixo>.csv` e devolve os dois caminhos."""
+    diretorio.mkdir(parents=True, exist_ok=True)
+    caminho_json = diretorio / f"treino_{prefixo}.json"
+    caminho_json.write_text(json.dumps(relatorio, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    caminho_csv = diretorio / f"comparacao_modelos_{prefixo}.csv"
+    pd.DataFrame(relatorio["comparacao"]).to_csv(caminho_csv, index=False)
+    return caminho_json, caminho_csv
