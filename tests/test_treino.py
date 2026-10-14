@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from src.config import ColunasTrilha
-from src.modeling.treino import Candidato, amostrar, treinar_trilha
+from src.modeling.treino import Candidato, amostrar, gravar_relatorio, treinar_trilha
 from src.preprocessing.tabelas import TabelaModelagem
 
 TRILHA = ColunasTrilha(categoricas=("cor", "nome_regiao"), numericas=("x",), proibidas=())
@@ -103,3 +103,11 @@ def test_relatorio_vira_json_e_se_repete_entre_execucoes() -> None:
 def test_nome_de_candidato_repetido_e_recusado() -> None:
     with pytest.raises(ValueError, match="repetido"):
         treinar_trilha(TRILHA, _tabela(), (CANDIDATOS[0], CANDIDATOS[0]))
+
+
+def test_gravar_relatorio_escreve_o_json_e_a_tabela_de_comparacao(tmp_path) -> None:
+    relatorio, _ = treinar_trilha(TRILHA, _tabela(), CANDIDATOS)
+    caminho_json, caminho_csv = gravar_relatorio(relatorio, "teste", tmp_path)
+    assert json.loads(caminho_json.read_text(encoding="utf-8"))["modelo_escolhido"] == relatorio["modelo_escolhido"]
+    comparacao = pd.read_csv(caminho_csv)
+    assert list(comparacao["modelo"]) == [linha["modelo"] for linha in relatorio["comparacao"]]
