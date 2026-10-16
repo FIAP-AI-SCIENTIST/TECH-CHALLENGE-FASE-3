@@ -9,6 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from src.config import ColunasTrilha
 from src.modeling.treino import Candidato, _arredondar, amostrar, gravar_relatorio, treinar_trilha
 from src.modeling.separacao import separar_por_municipio
+from src.modeling.pipeline_modelo import montar_pipeline
 from src.preprocessing.tabelas import TabelaModelagem
 
 TRILHA = ColunasTrilha(categoricas=("cor", "nome_regiao"), numericas=("x",), proibidas=())
@@ -113,11 +114,41 @@ def test_limite_de_linhas_reduz_treino_e_validacao_mas_nao_o_teste() -> None:
     assert limitado["tamanhos"]["teste"]["linhas"] == completo["tamanhos"]["teste"]["linhas"]
 
 
-def test_modelo_final_preve_probabilidades_para_dados_novos() -> None:
+def test_modelo_final_corresponde_ao_reajuste_em_treino_e_validacao() -> None:
     tabela = _tabela()
-    _, modelo = treinar_trilha(TRILHA, tabela, CANDIDATOS)
-    probabilidades = modelo.predict_proba(tabela.atributos.head(5))[:, 1]
-    assert ((probabilidades >= 0) & (probabilidades <= 1)).all()
+    treino, validacao, teste = separar_por_municipio(tabela)
+
+    relatorio, modelo_final = treinar_trilha(
+        TRILHA, tabela, CANDIDATOS
+    )
+
+    escolhido = relatorio["modelo_escolhido"]
+    candidato = next(
+        item for item in CANDIDATOS if item.nome == escolhido
+    )
+    parametros = relatorio["candidatos"][escolhido]["melhores_parametros"]
+
+    esperado = montar_pipeline(
+        TRILHA, candidato.estimador, candidato.escalonar
+    )
+    esperado.set_params(**parametros)
+    esperado.fit(
+        pd.concat(
+            [treino.atributos, validacao.atributos],
+            ignore_index=True,
+        ),
+        pd.concat(
+            [treino.alvo, validacao.alvo],
+            ignore_index=True,
+        ),
+    )
+
+    np.testing.assert_allclose(
+        modelo_final.predict_proba(teste.atributos),
+        esperado.predict_proba(teste.atributos),
+        rtol=1e-10,
+        atol=1e-10,
+    )
 
 
 def test_relatorio_vira_json_e_se_repete_entre_execucoes() -> None:
@@ -192,4 +223,3 @@ def test_atributos_do_teste_nao_influenciam_a_selecao_do_modelo() -> None:
 
     assert antes["teste"] != depois["teste"]   
 
-    
