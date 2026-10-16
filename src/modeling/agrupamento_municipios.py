@@ -36,6 +36,7 @@ from src.modeling.agrupamento import (
     agrupar_ward,
     avaliar,
     clusters_por_regiao,
+    detalhar_silhouette,
     escolher_eps,
     escolher_k,
     grade_eps,
@@ -51,6 +52,8 @@ from src.preprocessing.tabelas import construir_atributos_municipio
 from src.visualization.graficos_agrupamento import dispersao_pca, escolha_de_k
 
 logger = logging.getLogger(__name__)
+
+K_COMPLEMENTAR: int = 3
 
 
 @dataclass(frozen=True)
@@ -68,6 +71,8 @@ class ResultadoAgrupamento:
     eps: float | None
     rotulos_dbscan: np.ndarray | None
     avaliacao: dict[str, dict[str, float] | None]
+    rotulos_kmeans_k3: np.ndarray
+    rotulos_ward_k3: np.ndarray
 
 
 def _numerar_por_idhm(completos: pd.DataFrame, rotulos: np.ndarray) -> np.ndarray:
@@ -119,7 +124,7 @@ def executar(
     varredura_k = varrer_k(espaco)
     k = escolher_k(varredura_k)
     rotulos_kmeans = _numerar_por_idhm(completos, agrupar_kmeans(espaco, k))
-    avaliacao_kmeans = avaliar(espaco, rotulos_kmeans)
+    avaliacao_kmeans = {**avaliar(espaco, rotulos_kmeans), **detalhar_silhouette(espaco, rotulos_kmeans)}
     logger.info(
         "K-Means: K=%d (maior silhouette da varredura de %d a %d); silhouette %.4f, Davies-Bouldin %.4f",
         k, varredura_k["k"].min(), varredura_k["k"].max(), avaliacao_kmeans["silhouette"], avaliacao_kmeans["davies_bouldin"],
@@ -128,6 +133,16 @@ def executar(
     rotulos_ward = _numerar_por_idhm(completos, agrupar_ward(espaco, k))
     avaliacao_ward = avaliar(espaco, rotulos_ward)
     logger.info("Ward: K=%d; silhouette %.4f, Davies-Bouldin %.4f", k, avaliacao_ward["silhouette"], avaliacao_ward["davies_bouldin"])
+
+    # Leitura complementar, exploratória: o K=3 não vem da regra do K, e sim de olhar os resultados.
+    rotulos_kmeans_k3 = _numerar_por_idhm(completos, agrupar_kmeans(espaco, K_COMPLEMENTAR))
+    rotulos_ward_k3 = _numerar_por_idhm(completos, agrupar_ward(espaco, K_COMPLEMENTAR))
+    avaliacao_k3 = {**avaliar(espaco, rotulos_kmeans_k3), **detalhar_silhouette(espaco, rotulos_kmeans_k3)}
+    concordancia_k3 = float((rotulos_kmeans_k3 == rotulos_ward_k3).mean())
+    logger.info(
+        "K-Means K=%d (complementar, exploratório): silhouette %.4f, Davies-Bouldin %.4f; concordância com o Ward %.1f%%",
+        K_COMPLEMENTAR, avaliacao_k3["silhouette"], avaliacao_k3["davies_bouldin"], 100 * concordancia_k3,
+    )
 
     pts = min_pts(reducao.n_componentes)
     varredura_eps = varrer_eps(espaco, pts, grade_eps(espaco, pts))
@@ -148,16 +163,26 @@ def executar(
     diretorio_relatorios.mkdir(parents=True, exist_ok=True)
     clusters = completos[["id_municipio", "sigla_uf", "nome_regiao"]].assign(
         cluster=rotulos_kmeans,
+        cluster_k3=rotulos_kmeans_k3,
         cluster_ward=rotulos_ward,
         outlier_dbscan=pd.NA if rotulos_dbscan is None else (rotulos_dbscan == RUIDO).astype(int),
     )
     clusters.to_csv(diretorio_relatorios / "clusters_municipios.csv", index=False)
     perfil_dos_clusters(completos, rotulos_kmeans).to_csv(diretorio_relatorios / "perfil_clusters.csv")
     clusters_por_regiao(completos, rotulos_kmeans).to_csv(diretorio_relatorios / "clusters_por_regiao.csv")
+    perfil_dos_clusters(completos, rotulos_kmeans_k3).to_csv(diretorio_relatorios / "perfil_clusters_k3.csv")
+    clusters_por_regiao(completos, rotulos_kmeans_k3).to_csv(diretorio_relatorios / "clusters_por_regiao_k3.csv")
     dispersao_pca(
         reducao.projecao_2d, rotulos_kmeans, f"Municípios no PCA 2D, clusters do K-Means (K={k})", "agrupamento_pca_2d.png", diretorio_imagens
     )
     escolha_de_k(varredura_k, "Escolha de K no K-Means", "agrupamento_escolha_k.png", diretorio_imagens)
+    dispersao_pca(
+        reducao.projecao_2d,
+        rotulos_kmeans_k3,
+        f"Municípios no PCA 2D, clusters do K-Means (K={K_COMPLEMENTAR}, complementar)",
+        "agrupamento_pca_2d_k3.png",
+        diretorio_imagens,
+    )
 
     avaliacao = {"kmeans": avaliacao_kmeans, "ward": avaliacao_ward, "dbscan": avaliacao_dbscan}
     conteudo = {
@@ -172,6 +197,7 @@ def executar(
         },
         "kmeans": {
             "regra": "K de maior silhouette médio",
+            "escolhido_pela_regra": True,
             "k_escolhido": k,
             "varredura": varredura_k,
             "tamanhos": pd.Series(rotulos_kmeans).value_counts().sort_index().to_dict(),
@@ -183,13 +209,22 @@ def executar(
             "n_outliers": None if rotulos_dbscan is None else int((rotulos_dbscan == RUIDO).sum()),
         },
         "avaliacao": avaliacao,
+        "complementar": {
+            "descricao": "leitura exploratória com K=3, escolhida depois de ver os resultados e não pela regra do K",
+            "k": K_COMPLEMENTAR,
+            "escolhido_pela_regra": False,
+            "avaliacao": avaliacao_k3,
+            "concordancia_com_ward": concordancia_k3,
+            "tamanhos": pd.Series(rotulos_kmeans_k3).value_counts().sort_index().to_dict(),
+        },
     }
     (diretorio_relatorios / "agrupamento_municipios.json").write_text(
         json.dumps(_para_json(conteudo), indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     logger.info("Resultados gravados em %s e %s", diretorio_relatorios, diretorio_imagens)
     return ResultadoAgrupamento(
-        completos, excluidos, reducao, varredura_k, k, rotulos_kmeans, rotulos_ward, varredura_eps, eps, rotulos_dbscan, avaliacao
+        completos, excluidos, reducao, varredura_k, k, rotulos_kmeans, rotulos_ward, varredura_eps, eps, rotulos_dbscan, avaliacao,
+        rotulos_kmeans_k3, rotulos_ward_k3,
     )
 
 

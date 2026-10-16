@@ -9,6 +9,7 @@ from src.modeling.agrupamento import (
     agrupar_ward,
     avaliar,
     clusters_por_regiao,
+    detalhar_silhouette,
     escolher_eps,
     escolher_k,
     grade_eps,
@@ -325,3 +326,35 @@ def test_clusters_por_regiao_conta_os_municipios_de_cada_regiao_em_cada_cluster(
     assert tabela.loc[0, "Norte"] == 2 and tabela.loc[0, "Nordeste"] == 1 and tabela.loc[0, "Sul"] == 0
     assert tabela.loc[1, "Sul"] == 3 and tabela.loc[1, "Norte"] == 0
     assert tabela.to_numpy().sum() == 6
+
+
+# ---------- detalhe do silhouette: por cluster e na fronteira ----------
+
+DOIS_E_DOIS = np.array([[0.0], [1.0], [10.0], [11.0]])  # dois pares bem separados
+
+
+def test_silhouette_por_cluster_confere_com_a_conta_a_mao() -> None:
+    # ponto 0: a=1, b=(10+11)/2=10,5 -> 9,5/10,5; ponto 1: a=1, b=(9+10)/2=9,5 -> 8,5/9,5; o cluster 1 é simétrico
+    esperado = (9.5 / 10.5 + 8.5 / 9.5) / 2
+    detalhe = detalhar_silhouette(DOIS_E_DOIS, np.array([0, 0, 1, 1]))
+    assert detalhe["silhouette_por_cluster"] == pytest.approx({0: esperado, 1: esperado})
+    assert detalhe["pct_fronteira"] == 0.0
+
+
+def test_percentual_de_fronteira_conta_os_pontos_abaixo_do_limite() -> None:
+    # os silhouettes são 0,9048, 0,8947, 0,8947 e 0,9048: com limite 0,9 ficam abaixo os dois do meio
+    assert detalhar_silhouette(DOIS_E_DOIS, np.array([0, 0, 1, 1]), limite_fronteira=0.9)["pct_fronteira"] == 0.5
+    assert detalhar_silhouette(DOIS_E_DOIS, np.array([0, 0, 1, 1]), limite_fronteira=0.95)["pct_fronteira"] == 1.0
+
+
+def test_o_ruido_fica_fora_do_detalhe_e_do_denominador() -> None:
+    com_ruido = np.vstack([DOIS_E_DOIS, [[500.0]]])
+    sem = detalhar_silhouette(DOIS_E_DOIS, np.array([0, 0, 1, 1]), limite_fronteira=0.9)
+    com = detalhar_silhouette(com_ruido, np.array([0, 0, 1, 1, -1]), limite_fronteira=0.9)
+    assert com["silhouette_por_cluster"] == pytest.approx(sem["silhouette_por_cluster"])
+    assert com["pct_fronteira"] == sem["pct_fronteira"]  # o ponto de ruído não entra na conta
+
+
+def test_com_menos_de_dois_clusters_o_detalhe_fica_vazio_sem_quebrar() -> None:
+    um_so = detalhar_silhouette(DOIS_E_DOIS, np.zeros(4, dtype=int))
+    assert um_so["silhouette_por_cluster"] == {} and np.isnan(um_so["pct_fronteira"])

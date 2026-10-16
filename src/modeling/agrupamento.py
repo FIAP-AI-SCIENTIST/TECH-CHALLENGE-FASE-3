@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 from sklearn.decomposition import PCA
-from sklearn.metrics import davies_bouldin_score, silhouette_score
+from sklearn.metrics import davies_bouldin_score, silhouette_samples, silhouette_score
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 
@@ -38,6 +38,7 @@ INTERVALO_K: range = range(2, 11)
 QUANTIS_EPS: tuple[float, ...] = (0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99)
 MAX_CLUSTERS_DBSCAN: int = 10
 LIMITE_RUIDO: float = 0.10
+LIMITE_FRONTEIRA: float = 0.10
 N_INICIALIZACOES: int = 10
 RUIDO: int = -1
 
@@ -107,6 +108,28 @@ def avaliar(espaco: np.ndarray, rotulos: np.ndarray) -> dict[str, float]:
         "pct_ruido": float(ruido.mean()),
         "silhouette": silhouette,
         "davies_bouldin": davies_bouldin,
+    }
+
+
+def detalhar_silhouette(
+    espaco: np.ndarray, rotulos: np.ndarray, limite_fronteira: float = LIMITE_FRONTEIRA
+) -> dict[str, object]:
+    """Silhouette médio de cada cluster e o percentual de municípios na fronteira, sem o ruído.
+
+    Um cluster de silhouette médio baixo é difuso, e um município com silhouette abaixo de
+    `limite_fronteira` está perto demais do vizinho para ser atribuído com firmeza. Com menos
+    de dois clusters o detalhe não existe: o dicionário sai vazio e a fronteira, `nan`.
+    """
+    rotulos = np.asarray(rotulos)
+    validos = rotulos != RUIDO
+    clusters = np.unique(rotulos[validos])
+    if len(clusters) < 2 or int(validos.sum()) <= len(clusters):
+        return {"silhouette_por_cluster": {}, "pct_fronteira": float("nan")}
+    amostras = silhouette_samples(espaco[validos], rotulos[validos])
+    rotulos_validos = rotulos[validos]
+    return {
+        "silhouette_por_cluster": {int(c): float(amostras[rotulos_validos == c].mean()) for c in clusters},
+        "pct_fronteira": float((amostras < limite_fronteira).mean()),
     }
 
 
