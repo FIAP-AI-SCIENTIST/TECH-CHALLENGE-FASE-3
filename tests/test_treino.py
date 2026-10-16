@@ -8,6 +8,7 @@ from sklearn.linear_model import LogisticRegression
 
 from src.config import ColunasTrilha
 from src.modeling.treino import Candidato, _arredondar, amostrar, gravar_relatorio, treinar_trilha
+from src.modeling.separacao import separar_por_municipio
 from src.preprocessing.tabelas import TabelaModelagem
 
 TRILHA = ColunasTrilha(categoricas=("cor", "nome_regiao"), numericas=("x",), proibidas=())
@@ -72,10 +73,35 @@ def test_escolhe_o_candidato_de_maior_auc_roc_de_validacao_cruzada() -> None:
     assert relatorio["modelo_escolhido"] == max(candidatos, key=candidatos.get)
 
 
-def test_nenhum_municipio_aparece_em_dois_conjuntos() -> None:
-    relatorio, _ = treinar_trilha(TRILHA, _tabela(), CANDIDATOS)
-    municipios = [relatorio["tamanhos"][conjunto]["municipios"] for conjunto in ("treino", "validacao", "teste")]
-    assert sum(municipios) == 80
+def test_rotulos_do_teste_nao_influenciam_a_selecao_do_modelo() -> None:
+    original = _tabela()
+    _, _, teste = separar_por_municipio(original)
+
+    alvo_alterado = original.alvo.copy()
+    mascara_teste = original.grupos.isin(teste.grupos)
+    alvo_alterado.loc[mascara_teste] = (
+        1 - alvo_alterado.loc[mascara_teste]
+    )
+
+    alterada = TabelaModelagem(
+        atributos=original.atributos.copy(),
+        alvo=alvo_alterado,
+        grupos=original.grupos.copy(),
+    )
+
+    antes, _ = treinar_trilha(TRILHA, original, CANDIDATOS)
+    depois, _ = treinar_trilha(TRILHA, alterada, CANDIDATOS)
+
+    for campo in (
+        "baselines",
+        "candidatos",
+        "comparacao",
+        "modelo_escolhido",
+        "validacao",
+    ):
+        assert antes[campo] == depois[campo], campo
+
+    assert antes["teste"] != depois["teste"]
 
 
 def test_limite_de_linhas_reduz_treino_e_validacao_mas_nao_o_teste() -> None:
@@ -134,3 +160,36 @@ def test_relatorio_converte_valores_nao_finitos_em_null() -> None:
         "overfitting": True,
     }
     json.dumps(resultado, allow_nan=False)
+
+
+def test_atributos_do_teste_nao_influenciam_a_selecao_do_modelo() -> None:
+    original = _tabela()
+    _, _, teste = separar_por_municipio(original)
+
+    atributos_alterados = original.atributos.copy()
+    mascara_teste = original.grupos.isin(teste.grupos)
+
+    atributos_alterados.loc[mascara_teste, "x"] = 100.0
+    atributos_alterados.loc[mascara_teste, "cor"] = "inedita"
+
+    alterada = TabelaModelagem(
+        atributos=atributos_alterados,
+        alvo=original.alvo.copy(),
+        grupos=original.grupos.copy(),
+    )
+
+    antes, _ = treinar_trilha(TRILHA, original, CANDIDATOS)
+    depois, _ = treinar_trilha(TRILHA, alterada, CANDIDATOS)
+
+    for campo in (
+        "baselines",
+        "candidatos",
+        "comparacao",
+        "modelo_escolhido",
+        "validacao",
+    ):
+        assert antes[campo] == depois[campo], campo
+
+    assert antes["teste"] != depois["teste"]   
+
+    
