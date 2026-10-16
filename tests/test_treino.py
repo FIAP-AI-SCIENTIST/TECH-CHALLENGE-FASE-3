@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from src.config import ColunasTrilha
-from src.modeling.treino import Candidato, amostrar, gravar_relatorio, treinar_trilha
+from src.modeling.treino import Candidato, _arredondar, amostrar, gravar_relatorio, treinar_trilha
 from src.preprocessing.tabelas import TabelaModelagem
 
 TRILHA = ColunasTrilha(categoricas=("cor", "nome_regiao"), numericas=("x",), proibidas=())
@@ -111,3 +111,26 @@ def test_gravar_relatorio_escreve_o_json_e_a_tabela_de_comparacao(tmp_path) -> N
     assert json.loads(caminho_json.read_text(encoding="utf-8"))["modelo_escolhido"] == relatorio["modelo_escolhido"]
     comparacao = pd.read_csv(caminho_csv)
     assert list(comparacao["modelo"]) == [linha["modelo"] for linha in relatorio["comparacao"]]
+    
+
+def test_relatorio_converte_valores_nao_finitos_em_null() -> None:
+    entrada = {
+        "razao_erro": float("inf"),
+        "outros": [
+            float("-inf"),
+            float("nan"),
+            np.float64("inf"),
+        ],
+        "auc": 0.751234,
+        "overfitting": True,
+    }
+
+    resultado = _arredondar(entrada)
+
+    assert resultado == {
+        "razao_erro": None,
+        "outros": [None, None, None],
+        "auc": 0.7512,
+        "overfitting": True,
+    }
+    json.dumps(resultado, allow_nan=False)

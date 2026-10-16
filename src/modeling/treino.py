@@ -16,6 +16,7 @@ o teste é sempre avaliado inteiro.
 """
 
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -88,7 +89,7 @@ def _arredondar(valor: Any) -> Any:
     if isinstance(valor, bool):
         return valor
     if isinstance(valor, float):
-        return round(valor, CASAS_DECIMAIS)
+        return round(valor, CASAS_DECIMAIS) if math.isfinite(valor) else None
     if hasattr(valor, "item"):  # escalares do numpy
         return _arredondar(valor.item())
     return valor
