@@ -105,3 +105,16 @@ resultados da floresta não deve ser atribuída apenas ao ambiente.
 
 Os números das tabelas correspondem aos relatórios regenerados
 no ambiente registrado acima.
+
+## Organização do protocolo
+
+`src/modeling/treino.py` atua como orquestrador do experimento:
+coordena a preparação dos conjuntos, o treinamento, a avaliação
+e a gravação dos relatórios.
+
+Por essa responsabilidade, ele importa funções de `evaluation`,
+como exceção documentada à direção de dependências adotada no projeto.
+Os cálculos de métricas e diagnóstico permanecem em `evaluation`.
+
+Essa escolha preserva o ponto de entrada compartilhado pelas trilhas
+supervisionadas, sem mover módulos usados pelas PRs dependentes.

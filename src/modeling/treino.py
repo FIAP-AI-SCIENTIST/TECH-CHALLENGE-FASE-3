@@ -13,6 +13,12 @@ Junta as peças de `modeling` e `evaluation` numa ordem fixa, que vale para T1 e
 O teste só é tocado no passo 6. Os limites de linhas servem para a trilha do
 aluno, grande demais para a busca: a amostra é sorteada depois da separação, então
 o teste é sempre avaliado inteiro.
+
+Decisão de organização: este módulo é o orquestrador do experimento
+supervisionado e, por isso, coordena treinamento, avaliação e gravação
+dos relatórios. Ele permanece em `modeling` como exceção à direção
+de dependências adotada no projeto. Os cálculos de métricas e diagnóstico
+continuam implementados em `evaluation`.
 """
 
 import json
