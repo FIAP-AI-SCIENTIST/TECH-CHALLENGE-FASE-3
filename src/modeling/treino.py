@@ -112,9 +112,17 @@ def treinar_trilha(
     n_dobras: int = N_DOBRAS_PADRAO,
     semente: int = SEED,
 ) -> tuple[dict[str, Any], Pipeline]:
-    """Roda os seis passos do módulo e devolve o relatório (pronto para JSON) e o modelo final.
+    """Devolve o relatório de avaliação e o modelo final.
 
-    O modelo final é o candidato escolhido, reajustado em treino + validação.
+    As métricas do bloco `validacao` são calculadas com o modelo ajustado
+    somente no treino, antes do reajuste final.
+
+    O modelo retornado é reajustado em treino + validação e usado para
+    calcular as métricas do bloco `teste`. Ele não deve ser usado para
+    reproduzir as métricas de validação, pois já foi treinado nesses dados.
+
+    Para curvas ou diagnósticos de validação, deve-se usar um modelo
+    ajustado exclusivamente no treino.
     """
     nomes = [candidato.nome for candidato in candidatos]
     if len(set(nomes)) != len(nomes):
