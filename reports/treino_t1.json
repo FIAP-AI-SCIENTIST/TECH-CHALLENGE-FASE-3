@@ -1,0 +1,136 @@
+{
+  "tamanhos": {
+    "treino": {
+      "linhas": 100000,
+      "municipios": 3266,
+      "proporcao_positiva": 0.4043
+    },
+    "validacao": {
+      "linhas": 50000,
+      "municipios": 1095,
+      "proporcao_positiva": 0.4176
+    },
+    "teste": {
+      "linhas": 627013,
+      "municipios": 1110,
+      "proporcao_positiva": 0.4065
+    }
+  },
+  "baselines": {
+    "dummy": {
+      "auc_roc_media": 0.5,
+      "auc_roc_desvio": 0.0,
+      "auc_roc_treino_media": 0.5
+    },
+    "regressao_logistica": {
+      "auc_roc_media": 0.6266,
+      "auc_roc_desvio": 0.0139,
+      "auc_roc_treino_media": 0.6338
+    }
+  },
+  "candidatos": {
+    "regressao_logistica": {
+      "melhores_parametros": {
+        "estimador__C": 10.0
+      },
+      "auc_roc_cv": 0.6266
+    },
+    "random_forest": {
+      "melhores_parametros": {
+        "estimador__min_samples_leaf": 100,
+        "estimador__max_depth": 20
+      },
+      "auc_roc_cv": 0.6273
+    },
+    "gradient_boosting": {
+      "melhores_parametros": {
+        "estimador__max_depth": 3,
+        "estimador__learning_rate": 0.1
+      },
+      "auc_roc_cv": 0.6278
+    }
+  },
+  "comparacao": [
+    {
+      "modelo": "gradient_boosting",
+      "auc_roc_media": 0.6278,
+      "auc_roc_desvio": 0.0111,
+      "auc_roc_treino_media": 0.6481,
+      "lacuna_auc": 0.0203,
+      "razao_erro": 1.0577,
+      "overfitting": false
+    },
+    {
+      "modelo": "random_forest",
+      "auc_roc_media": 0.6273,
+      "auc_roc_desvio": 0.0146,
+      "auc_roc_treino_media": 0.6543,
+      "lacuna_auc": 0.027,
+      "razao_erro": 1.078,
+      "overfitting": false
+    },
+    {
+      "modelo": "regressao_logistica",
+      "auc_roc_media": 0.6266,
+      "auc_roc_desvio": 0.014,
+      "auc_roc_treino_media": 0.6338,
+      "lacuna_auc": 0.0072,
+      "razao_erro": 1.0196,
+      "overfitting": false
+    },
+    {
+      "modelo": "regressao_logistica_padrao",
+      "auc_roc_media": 0.6266,
+      "auc_roc_desvio": 0.0139,
+      "auc_roc_treino_media": 0.6338,
+      "lacuna_auc": 0.0072,
+      "razao_erro": 1.0197,
+      "overfitting": false
+    },
+    {
+      "modelo": "dummy",
+      "auc_roc_media": 0.5,
+      "auc_roc_desvio": 0.0,
+      "auc_roc_treino_media": 0.5,
+      "lacuna_auc": 0.0,
+      "razao_erro": 1.0,
+      "overfitting": false
+    }
+  ],
+  "modelo_escolhido": "gradient_boosting",
+  "validacao": {
+    "metricas": {
+      "auc_roc": 0.6184,
+      "auc_pr": 0.5234,
+      "precisao": 0.5846,
+      "recall": 0.2872,
+      "f1": 0.3851,
+      "matriz_confusao": {
+        "verdadeiro_negativo": 24859,
+        "falso_positivo": 4261,
+        "falso_negativo": 14884,
+        "verdadeiro_positivo": 5996
+      }
+    },
+    "diagnostico": {
+      "erro_treino": 0.3528,
+      "erro_validacao": 0.3816,
+      "razao_erro": 1.0816,
+      "lacuna_auc": 0.0288,
+      "overfitting": false
+    }
+  },
+  "teste": {
+    "auc_roc": 0.6317,
+    "auc_pr": 0.5247,
+    "precisao": 0.5904,
+    "recall": 0.1952,
+    "f1": 0.2934,
+    "matriz_confusao": {
+      "verdadeiro_negativo": 337632,
+      "falso_positivo": 34505,
+      "falso_negativo": 205133,
+      "verdadeiro_positivo": 49743
+    }
+  }
+}

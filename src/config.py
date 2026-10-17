@@ -18,6 +18,9 @@ RAIZ: Path = Path(__file__).resolve().parent.parent
 DIRETORIO_DADOS: Path = RAIZ / "data"
 DIRETORIO_RELATORIOS: Path = RAIZ / "reports"
 DIRETORIO_IMAGENS: Path = RAIZ / "images"
+# Modelos finais das trilhas supervisionadas, gravados pelos scripts de treino e
+# lidos pela avaliação, pela interpretação e pelo ranking, sem retreinar.
+DIRETORIO_MODELOS: Path = RAIZ / "models"
 
 # Camada Gold da Fase 2, lida do BigQuery por Application Default Credentials
 # (somente leitura). O projeto vem da variável de ambiente `GCP_PROJECT_ID`.
