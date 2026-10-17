@@ -9,6 +9,8 @@ Boosting). A Regressão Logística tem poucas combinações e usa a busca em gra
 árvores têm mais e usam a busca aleatória (Aula: Otimização 2).
 """
 
+from dataclasses import replace
+
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
@@ -16,6 +18,11 @@ from src.config import COLUNAS_T2, SEED
 from src.modeling.treino import Candidato, gravar_relatorio, treinar_trilha
 from src.preprocessing.loader import carregar_tabela
 from src.preprocessing.tabelas import TabelaModelagem, construir_tabela_municipio
+
+
+from src.modeling.pipeline_modelo import montar_pipeline
+from src.modeling.validacao_cruzada import validar_com_cv
+from src.modeling.separacao import separar_por_municipio
 
 PREFIXO_RELATORIO: str = "t2"
 
@@ -63,10 +70,72 @@ def carregar_tabela_t2() -> TabelaModelagem:
     )
 
 
+def analisar_sinal_uf(
+    treino: TabelaModelagem,
+    n_dobras: int = 5,
+) -> dict:
+    """Compara o sinal territorial usando somente a tabela de treino recebida.
+
+    A avaliação por UF mede transferência entre estados, não entre anos.
+    """
+    somente_uf = replace(
+        COLUNAS_T2,
+        categoricas=("sigla_uf", "nome_regiao"),
+        numericas=(),
+    )
+    sem_uf = replace(
+        COLUNAS_T2,
+        categoricas=tuple(
+            coluna for coluna in COLUNAS_T2.categoricas
+            if coluna not in ("sigla_uf", "nome_regiao")
+        ),
+    )
+    por_uf = TabelaModelagem(
+        atributos=treino.atributos,
+        alvo=treino.alvo,
+        grupos=treino.atributos["sigla_uf"],
+    )
+
+    resultado = {
+        "escopo": "somente treino",
+        "n_municipios": int(treino.grupos.nunique()),
+    }
+
+    for nome, trilha, tabela in [
+        ("somente_uf_regiao", somente_uf, treino),
+        ("sem_uf_regiao", sem_uf, treino),
+        ("agrupado_por_uf", COLUNAS_T2, por_uf),
+    ]:
+        modelo = montar_pipeline(
+            trilha,
+            LogisticRegression(max_iter=200, random_state=SEED),
+            escalonar=True,
+        )
+        resultado[nome] = validar_com_cv(
+            modelo, tabela, n_dobras=n_dobras
+        )
+
+    return resultado
+
+
 def executar() -> dict:
-    """Treina T2, grava o relatório em `reports/` e imprime o resumo."""
-    relatorio, _ = treinar_trilha(COLUNAS_T2, carregar_tabela_t2(), CANDIDATOS_T2)
-    caminho_json, caminho_csv = gravar_relatorio(relatorio, PREFIXO_RELATORIO)
+    """Treina T2 e grava o relatório com a análise territorial do treino."""
+    tabela = carregar_tabela_t2()
+
+    treino, _, _ = separar_por_municipio(tabela, semente=SEED)
+    analise_uf = analisar_sinal_uf(treino)
+
+    relatorio, _ = treinar_trilha(
+        COLUNAS_T2,
+        tabela,
+        CANDIDATOS_T2,
+        semente=SEED,
+    )
+    relatorio["analise_uf"] = analise_uf
+
+    caminho_json, caminho_csv = gravar_relatorio(
+        relatorio, PREFIXO_RELATORIO
+    )
     print(f"Modelo escolhido: {relatorio['modelo_escolhido']}")
     print(f"AUC-ROC no teste: {relatorio['teste']['auc_roc']}")
     print(f"Relatório: {caminho_json} e {caminho_csv}")
@@ -75,3 +144,6 @@ def executar() -> dict:
 
 if __name__ == "__main__":
     executar()
+
+
+
