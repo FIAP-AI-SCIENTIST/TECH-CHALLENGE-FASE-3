@@ -168,7 +168,7 @@ def test_gravar_relatorio_escreve_o_json_e_a_tabela_de_comparacao(tmp_path) -> N
     assert json.loads(caminho_json.read_text(encoding="utf-8"))["modelo_escolhido"] == relatorio["modelo_escolhido"]
     comparacao = pd.read_csv(caminho_csv)
     assert list(comparacao["modelo"]) == [linha["modelo"] for linha in relatorio["comparacao"]]
-    
+
 
 def test_relatorio_converte_valores_nao_finitos_em_null() -> None:
     entrada = {
@@ -221,5 +221,5 @@ def test_atributos_do_teste_nao_influenciam_a_selecao_do_modelo() -> None:
     ):
         assert antes[campo] == depois[campo], campo
 
-    assert antes["teste"] != depois["teste"]   
+    assert antes["teste"] != depois["teste"]
 

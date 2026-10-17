@@ -143,6 +143,3 @@ def executar() -> dict:
 
 if __name__ == "__main__":
     executar()
-
-
-
