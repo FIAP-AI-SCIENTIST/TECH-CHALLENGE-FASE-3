@@ -4,9 +4,9 @@
 `treinar_trilha` e grava `reports/treino_t2.json` e `reports/comparacao_modelos_t2.csv`.
 A tabela tem cerca de 5 mil municípios, então a busca roda sem amostra.
 
-Os três algoritmos são os ensinados (Regressão Logística, Random Forest e Gradient
-Boosting). A Regressão Logística tem poucas combinações e usa a busca em grade; as
-árvores têm mais e usam a busca aleatória (Aula: Otimização 2).
+Os três algoritmos são Regressão Logística, Random Forest e Gradient Boosting.
+A Regressão Logística e a Random Forest usam busca em grade; a Random Forest
+avalia as 24 combinações configuradas. O Gradient Boosting usa busca aleatória.
 """
 
 from dataclasses import replace
@@ -42,8 +42,7 @@ CANDIDATOS_T2: tuple[Candidato, ...] = (
             "estimador__max_depth": [3, 5, 10, None],
             "estimador__min_samples_leaf": [1, 5, 20],
         },
-        busca="aleatoria",
-        n_iteracoes=10,
+        busca="grade",
     ),
     Candidato(
         "gradient_boosting",

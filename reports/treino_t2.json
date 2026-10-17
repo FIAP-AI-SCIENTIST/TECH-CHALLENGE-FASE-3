@@ -37,11 +37,11 @@
     },
     "random_forest": {
       "melhores_parametros": {
-        "estimador__n_estimators": 300,
-        "estimador__min_samples_leaf": 1,
-        "estimador__max_depth": 10
+        "estimador__max_depth": 10,
+        "estimador__min_samples_leaf": 5,
+        "estimador__n_estimators": 300
       },
-      "auc_roc_cv": 0.7707
+      "auc_roc_cv": 0.7726
     },
     "gradient_boosting": {
       "melhores_parametros": {
@@ -72,6 +72,15 @@
       "overfitting": false
     },
     {
+      "modelo": "random_forest",
+      "auc_roc_media": 0.7726,
+      "auc_roc_desvio": 0.0144,
+      "auc_roc_treino_media": 0.8899,
+      "lacuna_auc": 0.1174,
+      "razao_erro": 2.0667,
+      "overfitting": true
+    },
+    {
       "modelo": "gradient_boosting",
       "auc_roc_media": 0.7725,
       "auc_roc_desvio": 0.0138,
@@ -79,15 +88,6 @@
       "lacuna_auc": 0.0753,
       "razao_erro": 1.4943,
       "overfitting": false
-    },
-    {
-      "modelo": "random_forest",
-      "auc_roc_media": 0.7707,
-      "auc_roc_desvio": 0.0133,
-      "auc_roc_treino_media": 0.9527,
-      "lacuna_auc": 0.182,
-      "razao_erro": 4.8462,
-      "overfitting": true
     },
     {
       "modelo": "dummy",

@@ -2,6 +2,7 @@ import pandas as pd
 
 from src.modeling import treino_municipio
 from src.preprocessing.tabelas import TabelaModelagem
+from sklearn.model_selection import ParameterGrid
 
 from src.config import COLUNAS_T2, SEED
 from src.modeling.pipeline_modelo import montar_pipeline
@@ -146,3 +147,20 @@ def test_executar_analisa_so_o_treino_e_grava_o_resultado(monkeypatch) -> None:
 
     assert resultado["analise_uf"] == analise
     assert eventos == ["analise", "treinamento", "gravacao"]
+
+
+def test_random_forest_avalia_a_grade_completa() -> None:
+    candidato = next(
+        item for item in CANDIDATOS_T2
+        if item.nome == "random_forest"
+    )
+
+    assert candidato.busca == "grade"
+
+    combinacoes = list(ParameterGrid(candidato.grade))
+    assert len(combinacoes) == 24
+    assert any(
+        parametros["estimador__max_depth"] is None
+        and parametros["estimador__min_samples_leaf"] == 20
+        for parametros in combinacoes
+    )

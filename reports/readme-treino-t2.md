@@ -8,7 +8,7 @@ O treino segue `src/modeling/treino.py`, o mesmo de T1:
 
 1. Treino, validação e teste (60/20/20) sorteados **por município**, estratificados pela região. Nenhum município aparece em dois conjuntos.
 2. Baselines (`DummyClassifier` e Regressão Logística padrão) com validação cruzada agrupada (`GroupKFold`, 5 dobras), só no treino.
-3. Busca de hiperparâmetros de cada candidato pela AUC-ROC de validação cruzada, só no treino: em grade para a Regressão Logística e aleatória para as árvores (Aula: Otimização 2).
+3. Busca de hiperparâmetros pela AUC-ROC de validação cruzada, somente no treino: em grade para Regressão Logística e Random Forest (24 combinações), e aleatória para Gradient Boosting.
 4. Escolha do candidato de maior AUC-ROC de validação cruzada, nunca pelo teste.
 5. Conferência do escolhido na validação, com o diagnóstico de overfitting (razão de erro `1 - AUC-ROC` validação/treino ≥ 2; Aula: Otimização 5).
 6. Reajuste em treino + validação e avaliação do teste uma única vez.
@@ -27,11 +27,11 @@ Comparação na validação cruzada do treino:
 |---|---|---|---|---|
 | **Regressão Logística** (`C=10`) | **0,780** | 0,015 | 0,791 | Não |
 | Regressão Logística padrão | 0,780 | 0,015 | 0,790 | Não |
+| Random Forest (300 árvores, profundidade 10, mínimo de 5 registros por folha) | 0,773 | 0,014 | 0,890 | **Sim** (razão 2,07) |
 | Gradient Boosting (200 árvores, profundidade 2, taxa 0,1) | 0,773 | 0,014 | 0,848 | Não (razão 1,49) |
-| Random Forest (300 árvores, profundidade 10) | 0,771 | 0,013 | 0,953 | **Sim** (razão 4,85) |
 | Dummy | 0,500 | 0,000 | 0,500 | Não |
 
-**Modelo escolhido: Regressão Logística.** Ela empata com as árvores na validação cruzada, não sofre overfitting e é a mais simples de interpretar.
+**Modelo escolhido: Regressão Logística.** Apresentou a maior AUC-ROC média de validação cruzada entre os candidatos, considerando os valores não arredondados. O diagnóstico adotado não sinalizou overfitting para ela.
 
 | Métrica (classe positiva = não atingiu a meta, limiar 0,5) | Validação | Teste |
 |---|---|---|
