@@ -78,3 +78,30 @@ A taxa de alfabetização de 2024 não é usada como atributo.
 
 Como há apenas um ano com rótulo municipal disponível, a generalização
 temporal permanece sem validação.
+
+## Ambiente de reprodução
+
+Os relatórios desta revisão foram regenerados em:
+
+- Windows 11, arquitetura AMD64;
+- Python 3.13.13;
+- scikit-learn 1.9.1;
+- NumPy 2.5.3;
+- pandas 3.0.6;
+- SciPy 1.18.1.
+
+Esse registro descreve a execução atual, não o ambiente que gerou
+a primeira versão do relatório.
+
+A semente controla as fontes de aleatoriedade configuradas no código,
+mas não garante resultados idênticos entre sistemas, arquiteturas
+e implementações numéricas diferentes. O arredondamento também não
+garante igualdade entre ambientes.
+
+O revisor relatou pequenas diferenças em métricas das árvores ao
+executar em macOS ARM64. Nesta revisão, a busca da Random Forest
+também mudou de aleatória para completa; portanto, a mudança dos
+resultados da floresta não deve ser atribuída apenas ao ambiente.
+
+Os números das tabelas correspondem aos relatórios regenerados
+no ambiente registrado acima.
