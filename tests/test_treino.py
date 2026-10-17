@@ -222,4 +222,3 @@ def test_atributos_do_teste_nao_influenciam_a_selecao_do_modelo() -> None:
         assert antes[campo] == depois[campo], campo
 
     assert antes["teste"] != depois["teste"]
-
