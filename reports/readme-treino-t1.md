@@ -1,6 +1,6 @@
 # Treino da trilha T1: o aluno é alfabetizado?
 
-Fragmento do README, a consolidar na unidade de documentação. Resultado de `python -m src.modeling.treino_aluno` (cerca de 7 minutos), gravado em [treino_t1.json](treino_t1.json) e [comparacao_modelos_t1.csv](comparacao_modelos_t1.csv).
+Fragmento do README, a consolidar na unidade de documentação. Resultado de `python -m src.modeling.treino_aluno`, gravado em [treino_t1.json](treino_t1.json) e [comparacao_modelos_t1.csv](comparacao_modelos_t1.csv).
 
 ## Protocolo
 

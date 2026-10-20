@@ -2,7 +2,7 @@
 
 `python -m src.modeling.treino_aluno` lê o snapshot, monta a tabela de T1 (3,35
 milhões de alunos), roda `treinar_trilha` e grava `reports/treino_t1.json` e
-`reports/comparacao_modelos_t1.csv`. Leva cerca de 15 minutos.
+`reports/comparacao_modelos_t1.csv`. O tempo de execução depende do computador e do ambiente.
 
 A tabela inteira não cabe na busca de hiperparâmetros com validação cruzada, então o
 treino e a validação são amostrados depois da separação por município, por sorteio
@@ -23,8 +23,8 @@ PREFIXO_RELATORIO: str = "t1"
 MAX_LINHAS_TREINO: int = 100_000
 MAX_LINHAS_VALIDACAO: int = 50_000
 
-# Grades menores que as de T2: um ajuste de Gradient Boosting com 100 mil alunos
-# leva cerca de 25 segundos, e a busca repete o ajuste a cada dobra.
+# Grades menores para limitar o custo da busca, que repete os ajustes
+# em cada dobra da validacao cruzada.
 CANDIDATOS_T1: tuple[Candidato, ...] = (
     Candidato(
         "regressao_logistica",
