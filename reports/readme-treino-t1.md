@@ -44,7 +44,12 @@ Comparação na validação cruzada do treino:
 | Regressão Logística padrão | 0,627 | 0,014 | 0,634 | Não |
 | Dummy | 0,500 | 0,000 | 0,500 | Não |
 
-**Modelo escolhido pela regra: Gradient Boosting.** Os três candidatos, porém, estão empatados: a diferença entre eles (0,001) é dez vezes menor que o desvio entre as dobras (cerca de 0,014). Trocar pela Regressão Logística, mais simples de explicar, não muda o desempenho; a decisão é do time.
+**Modelo escolhido: Gradient Boosting.** Foi mantido por apresentar a maior
+AUC-ROC média na validação cruzada do treino, conforme a regra de seleção
+do projeto. As diferenças entre os candidatos são pequenas em relação
+à variação entre as dobras e não demonstram superioridade conclusiva.
+
+Não foi feita troca de algoritmo com base nos resultados do teste.
 
 | Métrica (classe positiva = não alfabetizado, limiar 0,5) | Validação | Teste |
 |---|---|---|
@@ -53,6 +58,14 @@ Comparação na validação cruzada do treino:
 | Precisão | 0,585 | 0,590 |
 | Recall | 0,287 | 0,195 |
 | F1 | 0,385 | 0,293 |
+
+As duas colunas usam conjuntos de avaliação e ajustes do modelo diferentes.
+Na validação, o modelo foi treinado com a amostra de 100.000 registros.
+No teste, foi usado o modelo final, reajustado com as amostras de treino
+e validação reunidas, totalizando 150.000 registros.
+
+Por isso, a diferença de recall entre as colunas não deve ser atribuída
+somente à mudança do conjunto avaliado: o modelo também foi reajustado.
 
 Matriz de confusão no teste: 337.632 verdadeiros negativos, 34.505 falsos positivos, 205.133 falsos negativos e 49.743 verdadeiros positivos.
 
