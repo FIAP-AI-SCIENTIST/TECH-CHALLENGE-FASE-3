@@ -6,7 +6,25 @@ Fragmento do README, a consolidar na unidade de documentação. Resultado de `py
 
 É o mesmo de T2 (`src/modeling/treino.py`, descrito em [readme-treino-t2.md](readme-treino-t2.md)), com uma diferença: a tabela tem 3,35 milhões de alunos, grande demais para a busca de hiperparâmetros com validação cruzada. Depois da separação por município, o treino é reduzido a uma amostra de 100 mil alunos e a validação a uma de 50 mil, por sorteio simples (semente 42). **O teste é avaliado inteiro.**
 
-A amostra perde pouco: os atributos de T1 são do município, da rede e do caderno, e a tabela inteira tem só cerca de 120 mil combinações distintas deles. As grades são menores que as de T2, porque um ajuste de Gradient Boosting com 100 mil alunos leva cerca de 25 segundos.
+A amostragem limita o custo computacional. Em comparações relatadas
+pelo revisor, o Gradient Boosting passou de AUC 0,6183 com 100 mil
+registros para 0,6206 com 600 mil, na validação inteira.
+A Regressão Logística passou de 0,6128 para 0,6146 usando o treino inteiro.
+
+Essas verificações indicaram ganhos pequenos nos cenários avaliados,
+mas ainda não foram reproduzidas nesta branch nem automatizadas no pipeline.
+
+São usadas grades menores para limitar o custo da busca de
+hiperparâmetros. O tempo de execução depende do computador e do ambiente.
+
+Antes da amostragem, as partições contêm 1.971.880 registros no treino,
+755.768 na validação e 627.013 no teste.
+
+A busca e o treinamento inicial usam a amostra de 100.000 registros.
+A avaliação de validação usa a amostra de 50.000 registros.
+O modelo final é reajustado com essas duas amostras reunidas,
+totalizando 150.000 registros, e não com todas as linhas disponíveis
+no treino e na validação. O teste é avaliado inteiro.
 
 ## Resultado
 
