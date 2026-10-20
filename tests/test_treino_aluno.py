@@ -1,4 +1,4 @@
-from src.config import COLUNAS_T1
+from src.config import COLUNAS_T1, SEED
 from src.modeling.pipeline_modelo import montar_pipeline
 from src.modeling import treino_aluno
 from src.modeling.treino_aluno import CANDIDATOS_T1
@@ -19,7 +19,7 @@ def test_toda_chave_da_grade_e_um_parametro_do_pipeline() -> None:
 def test_estimadores_aleatorios_usam_a_semente_do_projeto() -> None:
     for candidato in CANDIDATOS_T1:
         if "random_state" in candidato.estimador.get_params():
-            assert candidato.estimador.get_params()["random_state"] == 42, candidato.nome
+            assert candidato.estimador.get_params()["random_state"] == SEED, candidato.nome
 
 
 def test_executar_encaminha_os_limites_de_amostragem(monkeypatch) -> None:
