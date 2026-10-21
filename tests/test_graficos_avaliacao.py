@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
+import matplotlib.pyplot as plt
 
+from src.visualization import graficos_avaliacao
 from src.visualization.graficos_avaliacao import curva_roc, distribuicao_probabilidades, matriz_confusao
 
 MATRIZ = {"verdadeiro_negativo": 50, "falso_positivo": 10, "falso_negativo": 15, "verdadeiro_positivo": 25}
@@ -74,3 +76,135 @@ def test_roc_recusa_classe_real_ausente(classe, tmp_path) -> None:
 
     with pytest.raises(ValueError, match="classes"):
         curva_roc(y, probabilidades, "Modelo", "ROC", "roc.png", tmp_path)
+
+
+def test_matriz_desenha_valores_percentuais_e_classes_corretos(monkeypatch):
+    figuras = []
+
+    def capturar_figura(figura, nome_arquivo, diretorio):
+        figuras.append(figura)
+        return diretorio / nome_arquivo
+
+    monkeypatch.setattr(
+        graficos_avaliacao, "salvar_figura", capturar_figura
+    )
+
+    try:
+        matriz_confusao(MATRIZ, ROTULOS, "Matriz", "matriz.png")
+
+        eixo = figuras[0].axes[0]
+
+        np.testing.assert_allclose(
+            eixo.images[0].get_array(),
+            [[50 / 60, 10 / 60], [15 / 40, 25 / 40]],
+        )
+
+        textos = {
+            texto.get_position(): texto.get_text()
+            for texto in eixo.texts
+        }
+        assert textos == {
+            (0, 0): "50\n(83,3%)",
+            (1, 0): "10\n(16,7%)",
+            (0, 1): "15\n(37,5%)",
+            (1, 1): "25\n(62,5%)",
+        }
+
+        assert [item.get_text() for item in eixo.get_xticklabels()] == [
+            f"Previsto:\n{ROTULOS[0]}",
+            f"Previsto:\n{ROTULOS[1]}",
+        ]
+        assert [item.get_text() for item in eixo.get_yticklabels()] == [
+            f"Real:\n{ROTULOS[0]}",
+            f"Real:\n{ROTULOS[1]}",
+        ]
+    finally:
+        for figura in figuras:
+            plt.close(figura)
+
+
+def test_roc_desenha_curva_e_referencia_corretas(monkeypatch):
+    figuras = []
+
+    def capturar_figura(figura, nome_arquivo, diretorio):
+        figuras.append(figura)
+        return diretorio / nome_arquivo
+
+    monkeypatch.setattr(
+        graficos_avaliacao, "salvar_figura", capturar_figura
+    )
+
+    try:
+        curva_roc(
+            [0, 0, 1, 1],
+            [0.1, 0.7, 0.4, 0.9],
+            "Modelo",
+            "ROC",
+            "roc.png",
+        )
+
+        eixo = figuras[0].axes[0]
+        curva, referencia = eixo.lines
+
+        np.testing.assert_allclose(
+            curva.get_xdata(), [0, 0, 0.5, 0.5, 1]
+        )
+        np.testing.assert_allclose(
+            curva.get_ydata(), [0, 0.5, 0.5, 1, 1]
+        )
+        assert curva.get_label() == "Modelo (AUC-ROC 0,750)"
+
+        np.testing.assert_allclose(referencia.get_xdata(), [0, 1])
+        np.testing.assert_allclose(referencia.get_ydata(), [0, 1])
+        assert referencia.get_linestyle() == "--"
+
+        assert eixo.get_xlabel() == "Taxa de falsos positivos"
+        assert eixo.get_ylabel() == "Taxa de verdadeiros positivos (recall)"
+    finally:
+        for figura in figuras:
+            plt.close(figura)
+
+
+def test_histograma_normaliza_classes_e_marca_limiar(monkeypatch):
+    figuras = []
+
+    def capturar_figura(figura, nome_arquivo, diretorio):
+        figuras.append(figura)
+        return diretorio / nome_arquivo
+
+    monkeypatch.setattr(
+        graficos_avaliacao, "salvar_figura", capturar_figura
+    )
+
+    try:
+        distribuicao_probabilidades(
+            [0, 0, 0, 1],
+            [0.1, 0.2, 0.8, 0.9],
+            ROTULOS,
+            "Distribuição",
+            "distribuicao.png",
+            limiar=0.6,
+            bins=2,
+        )
+
+        eixo = figuras[0].axes[0]
+        alturas = [barra.get_height() for barra in eixo.patches]
+
+        np.testing.assert_allclose(
+            alturas,
+            [2 / 3, 1 / 3, 0, 1],
+        )
+
+        assert len(eixo.lines) == 1
+        linha_limiar = eixo.lines[0]
+        np.testing.assert_allclose(
+            linha_limiar.get_xdata(), [0.6, 0.6]
+        )
+        assert linha_limiar.get_linestyle() == "--"
+        assert linha_limiar.get_label() == "Limiar 0,6"
+
+        assert eixo.get_ylabel() == "Proporção dentro da classe"
+        assert eixo.get_xlim() == (0, 1)
+    finally:
+        for figura in figuras:
+            plt.close(figura)
