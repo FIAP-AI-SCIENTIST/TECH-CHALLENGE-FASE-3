@@ -20,6 +20,7 @@ from src.modeling.treino import (
     treinar_trilha,
 )
 from src.preprocessing.tabelas import TabelaModelagem
+from src.evaluation.metricas import calcular_metricas
 
 TRILHA = ColunasTrilha(categoricas=("cor", "nome_regiao"), numericas=("x",), proibidas=())
 CANDIDATOS = (
@@ -257,7 +258,7 @@ def test_carregar_modelo_inexistente_explica_como_gerar(tmp_path) -> None:
 
 def test_conjunto_de_teste_e_o_mesmo_que_o_treino_avaliou() -> None:
     tabela = _tabela()
-    relatorio, _ = treinar_trilha(
+    relatorio, modelo = treinar_trilha(
         TRILHA,
         tabela,
         CANDIDATOS,
@@ -266,6 +267,14 @@ def test_conjunto_de_teste_e_o_mesmo_que_o_treino_avaliou() -> None:
     )
 
     teste = conjunto_de_teste(tabela)
+    probabilidades = modelo.predict_proba(teste.atributos)[:, 1]
+    metricas = calcular_metricas(teste.alvo, probabilidades)
 
     assert len(teste.alvo) == relatorio["tamanhos"]["teste"]["linhas"]
     assert teste.grupos.nunique() == relatorio["tamanhos"]["teste"]["municipios"]
+    assert metricas["matriz_confusao"] == relatorio["teste"]["matriz_confusao"]
+
+    esperado = separar_por_municipio(tabela)[2]
+    pd.testing.assert_frame_equal(teste.atributos, esperado.atributos)
+    pd.testing.assert_series_equal(teste.alvo, esperado.alvo)
+    pd.testing.assert_series_equal(teste.grupos, esperado.grupos)
