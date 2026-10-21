@@ -5,10 +5,12 @@
 final em `models/modelo_t2.joblib`.
 A tabela tem cerca de 5 mil municípios, então a busca roda sem amostra.
 
-Os três algoritmos são os ensinados (Regressão Logística, Random Forest e Gradient
-Boosting). A Regressão Logística tem poucas combinações e usa a busca em grade; as
-árvores têm mais e usam a busca aleatória (Aula: Otimização 2).
+Os três algoritmos são Regressão Logística, Random Forest e Gradient Boosting.
+A Regressão Logística e a Random Forest usam busca em grade; a Random Forest
+avalia as 24 combinações configuradas. O Gradient Boosting usa busca aleatória.
 """
+
+from dataclasses import replace
 
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -17,6 +19,11 @@ from src.config import COLUNAS_T2, SEED
 from src.modeling.treino import Candidato, gravar_modelo, gravar_relatorio, treinar_trilha
 from src.preprocessing.loader import carregar_tabela
 from src.preprocessing.tabelas import TabelaModelagem, construir_tabela_municipio
+
+
+from src.modeling.pipeline_modelo import montar_pipeline
+from src.modeling.validacao_cruzada import validar_com_cv
+from src.modeling.separacao import separar_por_municipio
 
 PREFIXO_RELATORIO: str = "t2"
 
@@ -36,8 +43,7 @@ CANDIDATOS_T2: tuple[Candidato, ...] = (
             "estimador__max_depth": [3, 5, 10, None],
             "estimador__min_samples_leaf": [1, 5, 20],
         },
-        busca="aleatoria",
-        n_iteracoes=10,
+        busca="grade",
     ),
     Candidato(
         "gradient_boosting",
@@ -64,11 +70,74 @@ def carregar_tabela_t2() -> TabelaModelagem:
     )
 
 
+def analisar_sinal_uf(
+    treino: TabelaModelagem,
+    n_dobras: int = 5,
+) -> dict:
+    """Compara o sinal territorial usando somente a tabela de treino recebida.
+
+    A avaliação por UF mede transferência entre estados, não entre anos.
+    """
+    somente_uf = replace(
+        COLUNAS_T2,
+        categoricas=("sigla_uf", "nome_regiao"),
+        numericas=(),
+    )
+    sem_uf = replace(
+        COLUNAS_T2,
+        categoricas=tuple(
+            coluna for coluna in COLUNAS_T2.categoricas
+            if coluna not in ("sigla_uf", "nome_regiao")
+        ),
+    )
+    por_uf = TabelaModelagem(
+        atributos=treino.atributos,
+        alvo=treino.alvo,
+        grupos=treino.atributos["sigla_uf"],
+    )
+
+    resultado = {
+        "escopo": "somente treino",
+        "n_municipios": int(treino.grupos.nunique()),
+    }
+
+    for nome, trilha, tabela in [
+        ("somente_uf_regiao", somente_uf, treino),
+        ("sem_uf_regiao", sem_uf, treino),
+        ("agrupado_por_uf", COLUNAS_T2, por_uf),
+    ]:
+        modelo = montar_pipeline(
+            trilha,
+            LogisticRegression(max_iter=200, random_state=SEED),
+            escalonar=True,
+        )
+        resultado[nome] = validar_com_cv(
+            modelo, tabela, n_dobras=n_dobras
+        )
+
+    return resultado
+
+
 def executar() -> dict:
-    """Treina T2, grava o relatório em `reports/` e o modelo em `models/` e imprime o resumo."""
-    relatorio, modelo = treinar_trilha(COLUNAS_T2, carregar_tabela_t2(), CANDIDATOS_T2)
-    caminho_json, caminho_csv = gravar_relatorio(relatorio, PREFIXO_RELATORIO)
+    """Treina T2, registra a análise territorial e grava relatório e modelo."""
+    tabela = carregar_tabela_t2()
+
+    treino, _, _ = separar_por_municipio(tabela, semente=SEED)
+    analise_uf = analisar_sinal_uf(treino)
+
+    relatorio, modelo = treinar_trilha(
+        COLUNAS_T2,
+        tabela,
+        CANDIDATOS_T2,
+        semente=SEED,
+    )
+    relatorio["analise_uf"] = analise_uf
+
+    caminho_json, caminho_csv = gravar_relatorio(
+        relatorio, PREFIXO_RELATORIO
+    )
     caminho_modelo = gravar_modelo(modelo, PREFIXO_RELATORIO)
+
     print(f"Modelo escolhido: {relatorio['modelo_escolhido']}")
     print(f"AUC-ROC no teste: {relatorio['teste']['auc_roc']}")
     print(f"Relatório: {caminho_json} e {caminho_csv}")
