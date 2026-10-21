@@ -29,3 +29,7 @@ A persistência dos modelos com joblib é uma decisão técnica do projeto: perm
 - **O recall é de só 19,5%:** o modelo deixa de apontar 80,5% dos alunos não alfabetizados no limiar de 0,5.
 - A distribuição das probabilidades explica por quê: quase todas ficam entre 0,2 e 0,6, concentradas abaixo de 0,5, e as duas classes se sobrepõem. Como os atributos são do município, da rede e do caderno, alunos com os mesmos valores de todos os atributos de entrada recebem a mesma probabilidade; o modelo separa territórios mais e menos vulneráveis, não alunos.
 - A curva ROC (AUC-ROC de 0,632) mostra que um limiar mais baixo aumentaria o recall à custa de mais falsos positivos. Escolher esse limiar depende do custo de cada erro para a política pública, e as aulas não ensinam como fazê-lo, então o projeto mantém 0,5.
+
+## Organização da execução
+
+`src/evaluation/avaliacao_final.py` reúne a conferência das métricas e a execução que carrega dados, modelos e gera figuras. Essa organização mantém dependências entre os pacotes de avaliação e modelagem. A separação da execução em um módulo de orquestração fica como melhoria posterior; o comando atual é preservado para manter a compatibilidade com as etapas dependentes.
