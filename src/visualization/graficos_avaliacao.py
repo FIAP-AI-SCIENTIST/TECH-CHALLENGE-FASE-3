@@ -56,7 +56,11 @@ def matriz_confusao(
             [matriz["falso_negativo"], matriz["verdadeiro_positivo"]],
         ]
     )
-    percentual_da_linha = valores / valores.sum(axis=1, keepdims=True)
+    totais_por_classe = valores.sum(axis=1, keepdims=True)
+    if (totais_por_classe == 0).any():
+        raise ValueError("A matriz precisa de registros nas duas classes reais.")
+
+    percentual_da_linha = valores / totais_por_classe
 
     figura, eixo = plt.subplots(figsize=(5.5, 4.5))
     imagem = eixo.imshow(percentual_da_linha, cmap="Blues", vmin=0, vmax=1)
@@ -89,6 +93,8 @@ def curva_roc(
 ) -> Path:
     """Curva ROC do modelo contra a diagonal do acaso, com a AUC-ROC na legenda."""
     y, probabilidade = _validar_tamanhos(y_verdadeiro, probabilidades)
+    if not np.array_equal(np.unique(y), [0, 1]):
+        raise ValueError("A curva ROC precisa das duas classes reais: 0 e 1.")
     falsos_positivos, verdadeiros_positivos, _ = roc_curve(y, probabilidade)
     auc = roc_auc_score(y, probabilidade)
 

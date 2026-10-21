@@ -43,3 +43,34 @@ def test_graficos_recusam_tamanhos_diferentes(tmp_path) -> None:
         curva_roc(y, probabilidades[:-1], "Modelo", "ROC", "roc.png", tmp_path)
     with pytest.raises(ValueError, match="mesmo tamanho"):
         distribuicao_probabilidades(y[:-1], probabilidades, ROTULOS, "D", "d.png", tmp_path)
+
+
+@pytest.mark.parametrize(
+    "matriz",
+    [
+        {
+            "verdadeiro_negativo": 0,
+            "falso_positivo": 0,
+            "falso_negativo": 2,
+            "verdadeiro_positivo": 3,
+        },
+        {
+            "verdadeiro_negativo": 3,
+            "falso_positivo": 2,
+            "falso_negativo": 0,
+            "verdadeiro_positivo": 0,
+        },
+    ],
+)
+def test_matriz_recusa_classe_real_ausente(matriz, tmp_path) -> None:
+    with pytest.raises(ValueError, match="classes"):
+        matriz_confusao(matriz, ROTULOS, "Matriz", "matriz.png", tmp_path)
+
+
+@pytest.mark.parametrize("classe", [0, 1])
+def test_roc_recusa_classe_real_ausente(classe, tmp_path) -> None:
+    y = [classe, classe, classe]
+    probabilidades = [0.1, 0.5, 0.9]
+
+    with pytest.raises(ValueError, match="classes"):
+        curva_roc(y, probabilidades, "Modelo", "ROC", "roc.png", tmp_path)
