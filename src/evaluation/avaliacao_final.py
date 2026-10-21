@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 from src.config import DIRETORIO_IMAGENS, DIRETORIO_RELATORIOS
-from src.evaluation.metricas import calcular_metricas
+from src.evaluation.metricas import LIMIAR_PADRAO, calcular_metricas
 from src.modeling.treino import carregar_modelo, conjunto_de_teste
 from src.modeling.treino_aluno import carregar_tabela_t1
 from src.modeling.treino_municipio import carregar_tabela_t2
@@ -45,14 +45,17 @@ def desenhar_avaliacao(
     diretorio: Path = DIRETORIO_IMAGENS,
     titulo_trilha: str = "",
 ) -> list[Path]:
-    """Matriz de confusão (limiar 0,5), curva ROC e distribuição das probabilidades da trilha."""
-    metricas = calcular_metricas(y_verdadeiro, probabilidades)
+    """Desenha matriz e histograma com LIMIAR_PADRAO, além da curva ROC."""
+    metricas = calcular_metricas(
+        y_verdadeiro, probabilidades, limiar=LIMIAR_PADRAO
+    )
+    limiar_texto = str(LIMIAR_PADRAO).replace(".", ",")
     sufixo = f" - {titulo_trilha}" if titulo_trilha else ""
     return [
         matriz_confusao(
             metricas["matriz_confusao"],
             rotulos,
-            f"Matriz de confusão no teste{sufixo}",
+            f"Matriz de confusão no teste — limiar {limiar_texto}{sufixo}",
             f"avaliacao_matriz_confusao_{prefixo}.png",
             diretorio,
         ),
@@ -66,6 +69,7 @@ def desenhar_avaliacao(
             f"Probabilidade prevista por classe real{sufixo}",
             f"avaliacao_probabilidades_{prefixo}.png",
             diretorio,
+            limiar=LIMIAR_PADRAO,
         ),
     ]
 
