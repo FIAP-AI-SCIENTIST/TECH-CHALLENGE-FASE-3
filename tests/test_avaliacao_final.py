@@ -43,3 +43,36 @@ def test_conferencia_recusa_modelo_desatualizado() -> None:
     relatorio = {"teste": {**calcular_metricas(y, probabilidades), "auc_roc": 0.99}}
     with pytest.raises(RuntimeError, match="treino"):
         conferir_com_relatorio(calcular_metricas(y, probabilidades), relatorio)
+
+
+def test_conferencia_recusa_auc_pr_diferente() -> None:
+    y, probabilidades = _previsoes()
+    metricas = calcular_metricas(y, probabilidades)
+
+    relatorio = {
+        "teste": {
+            **metricas,
+            "auc_pr": 0.0,
+        }
+    }
+
+    with pytest.raises(RuntimeError, match="treino"):
+        conferir_com_relatorio(metricas, relatorio)
+
+
+def test_conferencia_recusa_matriz_de_confusao_diferente() -> None:
+    y, probabilidades = _previsoes()
+    metricas = calcular_metricas(y, probabilidades)
+
+    matriz_alterada = metricas["matriz_confusao"].copy()
+    matriz_alterada["falso_positivo"] += 1
+
+    relatorio = {
+        "teste": {
+            **metricas,
+            "matriz_confusao": matriz_alterada,
+        }
+    }
+
+    with pytest.raises(RuntimeError, match="treino"):
+        conferir_com_relatorio(metricas, relatorio)
