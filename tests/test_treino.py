@@ -7,10 +7,20 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from src.config import ColunasTrilha
-from src.modeling.treino import Candidato, _arredondar, amostrar, gravar_relatorio, treinar_trilha
-from src.modeling.separacao import separar_por_municipio
 from src.modeling.pipeline_modelo import montar_pipeline
+from src.modeling.separacao import separar_por_municipio
+from src.modeling.treino import (
+    Candidato,
+    _arredondar,
+    amostrar,
+    carregar_modelo,
+    conjunto_de_teste,
+    gravar_modelo,
+    gravar_relatorio,
+    treinar_trilha,
+)
 from src.preprocessing.tabelas import TabelaModelagem
+from src.evaluation.metricas import calcular_metricas
 
 TRILHA = ColunasTrilha(categoricas=("cor", "nome_regiao"), numericas=("x",), proibidas=())
 CANDIDATOS = (
@@ -222,3 +232,49 @@ def test_atributos_do_teste_nao_influenciam_a_selecao_do_modelo() -> None:
         assert antes[campo] == depois[campo], campo
 
     assert antes["teste"] != depois["teste"]
+
+
+def test_modelo_gravado_e_carregado_preve_igual_ao_original(tmp_path) -> None:
+    tabela = _tabela()
+    _, modelo = treinar_trilha(TRILHA, tabela, CANDIDATOS)
+
+    caminho = gravar_modelo(modelo, "teste", tmp_path)
+    carregado = carregar_modelo("teste", tmp_path)
+
+    assert caminho.exists()
+    np.testing.assert_allclose(
+        modelo.predict_proba(tabela.atributos),
+        carregado.predict_proba(tabela.atributos),
+    )
+
+
+def test_carregar_modelo_inexistente_explica_como_gerar(tmp_path) -> None:
+    with pytest.raises(
+        FileNotFoundError,
+        match="python -m src.modeling.treino_",
+    ):
+        carregar_modelo("inexistente", tmp_path)
+
+
+def test_conjunto_de_teste_e_o_mesmo_que_o_treino_avaliou() -> None:
+    tabela = _tabela()
+    relatorio, modelo = treinar_trilha(
+        TRILHA,
+        tabela,
+        CANDIDATOS,
+        max_linhas_treino=200,
+        max_linhas_validacao=100,
+    )
+
+    teste = conjunto_de_teste(tabela)
+    probabilidades = modelo.predict_proba(teste.atributos)[:, 1]
+    metricas = calcular_metricas(teste.alvo, probabilidades)
+
+    assert len(teste.alvo) == relatorio["tamanhos"]["teste"]["linhas"]
+    assert teste.grupos.nunique() == relatorio["tamanhos"]["teste"]["municipios"]
+    assert metricas["matriz_confusao"] == relatorio["teste"]["matriz_confusao"]
+
+    esperado = separar_por_municipio(tabela)[2]
+    pd.testing.assert_frame_equal(teste.atributos, esperado.atributos)
+    pd.testing.assert_series_equal(teste.alvo, esperado.alvo)
+    pd.testing.assert_series_equal(teste.grupos, esperado.grupos)

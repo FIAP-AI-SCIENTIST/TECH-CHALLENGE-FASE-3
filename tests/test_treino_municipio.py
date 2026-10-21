@@ -143,6 +143,12 @@ def test_executar_analisa_so_o_treino_e_grava_o_resultado(monkeypatch) -> None:
         treino_municipio, "gravar_relatorio", gravar_falso
     )
 
+    monkeypatch.setattr(
+        treino_municipio,
+        "gravar_modelo",
+        lambda modelo, prefixo: "modelo_teste.joblib",
+    )
+
     resultado = treino_municipio.executar()
 
     assert resultado["analise_uf"] == analise

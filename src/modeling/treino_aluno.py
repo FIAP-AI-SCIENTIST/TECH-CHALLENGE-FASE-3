@@ -2,7 +2,9 @@
 
 `python -m src.modeling.treino_aluno` lê o snapshot, monta a tabela de T1 (3,35
 milhões de alunos), roda `treinar_trilha` e grava `reports/treino_t1.json` e
-`reports/comparacao_modelos_t1.csv`. O tempo de execução depende do computador e do ambiente.
+
+`reports/comparacao_modelos_t1.csv` e o modelo final em `models/modelo_t1.joblib`.
+O tempo de execução depende do computador e do ambiente.
 
 A tabela inteira não cabe na busca de hiperparâmetros com validação cruzada, então o
 treino e a validação são amostrados depois da separação por município, por sorteio
@@ -15,7 +17,7 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from src.config import COLUNAS_T1, SEED
-from src.modeling.treino import Candidato, gravar_relatorio, treinar_trilha
+from src.modeling.treino import Candidato, gravar_modelo, gravar_relatorio, treinar_trilha
 from src.preprocessing.loader import carregar_tabela
 from src.preprocessing.tabelas import TabelaModelagem, construir_tabela_aluno
 
@@ -63,8 +65,8 @@ def carregar_tabela_t1() -> TabelaModelagem:
 
 
 def executar() -> dict:
-    """Treina T1 com amostra no treino e na validação, grava o relatório em `reports/` e imprime o resumo."""
-    relatorio, _ = treinar_trilha(
+    """Treina T1 com amostra no treino e na validação, grava o relatório em `reports/` e o modelo em `models/`."""
+    relatorio, modelo = treinar_trilha(
         COLUNAS_T1,
         carregar_tabela_t1(),
         CANDIDATOS_T1,
@@ -72,9 +74,11 @@ def executar() -> dict:
         max_linhas_validacao=MAX_LINHAS_VALIDACAO,
     )
     caminho_json, caminho_csv = gravar_relatorio(relatorio, PREFIXO_RELATORIO)
+    caminho_modelo = gravar_modelo(modelo, PREFIXO_RELATORIO)
     print(f"Modelo escolhido: {relatorio['modelo_escolhido']}")
     print(f"AUC-ROC no teste: {relatorio['teste']['auc_roc']}")
     print(f"Relatório: {caminho_json} e {caminho_csv}")
+    print(f"Modelo: {caminho_modelo}")
     return relatorio
 
 

@@ -58,6 +58,12 @@ def test_executar_encaminha_os_limites_de_amostragem(monkeypatch) -> None:
         lambda *args: ("relatorio.json", "comparacao.csv"),
     )
 
+    monkeypatch.setattr(
+        treino_aluno,
+        "gravar_modelo",
+        lambda modelo, prefixo: "modelo_teste.joblib",
+    )
+
     treino_aluno.executar()
 
     assert chamadas == [(100, 50)]
@@ -88,6 +94,12 @@ def test_execucao_respeita_amostras_sem_misturar_municipios(monkeypatch) -> None
         treino_aluno,
         "gravar_relatorio",
         lambda *args: ("relatorio.json", "comparacao.csv"),
+    )
+
+    monkeypatch.setattr(
+        treino_aluno,
+        "gravar_modelo",
+        lambda modelo, prefixo: "modelo_teste.joblib",
     )
 
     relatorio = treino_aluno.executar()

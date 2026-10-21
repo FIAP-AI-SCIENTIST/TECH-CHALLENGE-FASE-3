@@ -27,11 +27,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import joblib
 import pandas as pd
 from sklearn.base import BaseEstimator, clone
 from sklearn.pipeline import Pipeline
 
-from src.config import DIRETORIO_RELATORIOS, SEED, ColunasTrilha
+from src.config import DIRETORIO_MODELOS, DIRETORIO_RELATORIOS, SEED, ColunasTrilha
 from src.evaluation.diagnostico import comparar_modelos, diagnosticar_overfitting, melhor_modelo
 from src.evaluation.metricas import calcular_metricas
 from src.modeling.pipeline_modelo import montar_pipeline
@@ -191,3 +192,27 @@ def gravar_relatorio(relatorio: dict[str, Any], prefixo: str, diretorio: Path = 
     caminho_csv = diretorio / f"comparacao_modelos_{prefixo}.csv"
     pd.DataFrame(relatorio["comparacao"]).to_csv(caminho_csv, index=False)
     return caminho_json, caminho_csv
+
+
+def conjunto_de_teste(tabela: TabelaModelagem, semente: int = SEED) -> TabelaModelagem:
+    """O teste que `treinar_trilha` avaliou: a separação por município é determinada pela semente."""
+    return separar_por_municipio(tabela, semente=semente)[2]
+
+
+def gravar_modelo(modelo: Pipeline, prefixo: str, diretorio: Path = DIRETORIO_MODELOS) -> Path:
+    """Grava o `Pipeline` final em `modelo_<prefixo>.joblib` e devolve o caminho."""
+    diretorio.mkdir(parents=True, exist_ok=True)
+    caminho = diretorio / f"modelo_{prefixo}.joblib"
+    joblib.dump(modelo, caminho)
+    return caminho
+
+
+def carregar_modelo(prefixo: str, diretorio: Path = DIRETORIO_MODELOS) -> Pipeline:
+    """Lê o `Pipeline` final gravado por `gravar_modelo`."""
+    caminho = diretorio / f"modelo_{prefixo}.joblib"
+    if not caminho.exists():
+        raise FileNotFoundError(
+            f"{caminho} não existe. Gere o modelo com `python -m src.modeling.treino_municipio` (t2) "
+            "ou `python -m src.modeling.treino_aluno` (t1)."
+        )
+    return joblib.load(caminho)
