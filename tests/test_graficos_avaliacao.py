@@ -208,3 +208,46 @@ def test_histograma_normaliza_classes_e_marca_limiar(monkeypatch):
     finally:
         for figura in figuras:
             plt.close(figura)
+
+
+@pytest.mark.parametrize("grafico", ["matriz", "roc", "histograma"])
+def test_escalas_usam_formatacao_coerente(monkeypatch, grafico):
+    figuras = []
+
+    def capturar_figura(figura, nome_arquivo, diretorio):
+        figuras.append(figura)
+        return diretorio / nome_arquivo
+
+    monkeypatch.setattr(
+        graficos_avaliacao, "salvar_figura", capturar_figura
+    )
+
+    try:
+        if grafico == "matriz":
+            matriz_confusao(MATRIZ, ROTULOS, "Matriz", "matriz.png")
+            barra = figuras[0].axes[1]
+            formatador = barra.yaxis.get_major_formatter()
+            assert formatador(0.2, 0) == "20,0%"
+        else:
+            y = [0, 0, 1, 1]
+            probabilidades = [0.1, 0.7, 0.4, 0.9]
+
+            if grafico == "roc":
+                curva_roc(y, probabilidades, "Modelo", "ROC", "roc.png")
+            else:
+                distribuicao_probabilidades(
+                    y, probabilidades, ROTULOS, "Distribuição", "dist.png"
+                )
+
+            eixo = figuras[0].axes[0]
+            assert eixo.xaxis.get_major_formatter()(0.2, 0) == "0,2"
+
+            esperado_y = "0,20" if grafico == "histograma" else "0,2"
+            assert eixo.yaxis.get_major_formatter()(0.2, 0) == esperado_y
+
+            if grafico == "histograma":
+                assert eixo.yaxis.get_major_formatter()(0.02, 0) == "0,02"
+                assert eixo.yaxis.get_major_formatter()(0.04, 0) == "0,04"
+    finally:
+        for figura in figuras:
+            plt.close(figura)

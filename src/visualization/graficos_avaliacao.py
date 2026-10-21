@@ -9,6 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 import numpy as np
 from sklearn.metrics import roc_auc_score, roc_curve
 
@@ -79,7 +80,17 @@ def matriz_confusao(
     eixo.set_xticks([0, 1], [f"Previsto:\n{rotulos[0]}", f"Previsto:\n{rotulos[1]}"])
     eixo.set_yticks([0, 1], [f"Real:\n{rotulos[0]}", f"Real:\n{rotulos[1]}"])
     eixo.set_title(titulo)
-    figura.colorbar(imagem, ax=eixo, label="% da classe real", fraction=0.046, pad=0.04)
+    barra = figura.colorbar(
+        imagem,
+        ax=eixo,
+        label="% da classe real",
+        fraction=0.046,
+        pad=0.04,
+        format=FuncFormatter(
+            lambda valor, posicao: f"{_decimal(100 * valor, 1)}%"
+        ),
+    )
+    barra.update_ticks()
     return salvar_figura(figura, nome_arquivo, diretorio)
 
 
@@ -108,6 +119,12 @@ def curva_roc(
     eixo.set_title(titulo)
     eixo.grid(color="#e4e3df", linewidth=0.8)
     eixo.legend(loc="lower right")
+    eixo.xaxis.set_major_formatter(
+        FuncFormatter(lambda valor, posicao: _decimal(valor, 1))
+    )
+    eixo.yaxis.set_major_formatter(
+        FuncFormatter(lambda valor, posicao: _decimal(valor, 1))
+    )
     return salvar_figura(figura, nome_arquivo, diretorio)
 
 
@@ -140,4 +157,10 @@ def distribuicao_probabilidades(
     eixo.set_ylabel("Proporção dentro da classe")
     eixo.set_title(titulo)
     eixo.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
+    eixo.xaxis.set_major_formatter(
+        FuncFormatter(lambda valor, posicao: _decimal(valor, 1))
+    )
+    eixo.yaxis.set_major_formatter(
+        FuncFormatter(lambda valor, posicao: _decimal(valor, 2))
+    )
     return salvar_figura(figura, nome_arquivo, diretorio)
