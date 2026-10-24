@@ -9,8 +9,8 @@ diferentes, e a interpretação lê as três juntas:
 - **Permutação** (`permutation_importance`): a queda da AUC-ROC quando uma coluna
   original é embaralhada. Mede o atributo inteiro, inclusive todas as suas colunas
   One-Hot, e não depende do tipo de modelo.
-- **SHAP:** a contribuição de cada atributo para cada previsão, em log-odds. Recomendado
-  pelo enunciado e não coberto nas aulas.
+- **SHAP:** a contribuição de cada atributo para cada previsão. A escala é
+  log-odds na Regressão Logística e no Gradient Boosting, e probabilidade na Random Forest.
 
 Tudo descreve associação nos dados, não o efeito de uma política.
 """
@@ -20,6 +20,7 @@ from collections.abc import Sequence
 import numpy as np
 import pandas as pd
 import shap
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.inspection import permutation_importance
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
@@ -56,8 +57,9 @@ def importancia_nativa(modelo: Pipeline) -> pd.DataFrame:
     else:
         valores = estimador.feature_importances_
     tabela = pd.DataFrame({"atributo_transformado": nomes, "importancia": valores})
-    ordem = tabela["importancia"].abs().sort_values(ascending=False).index
-    return tabela.loc[ordem].reset_index(drop=True)
+    return (tabela.assign(modulo=tabela["importancia"].abs())
+            .sort_values(["modulo", "atributo_transformado"], ascending=[False, True])
+            .drop(columns="modulo").reset_index(drop=True))
 
 
 def importancia_por_permutacao(
@@ -74,28 +76,32 @@ def importancia_por_permutacao(
             "queda_auc_desvio": resultado.importances_std,
         }
     )
-    return tabela.sort_values("queda_auc_media", ascending=False).reset_index(drop=True)
+    return tabela.sort_values(["queda_auc_media", "atributo"], ascending=[False, True]).reset_index(drop=True)
 
 
-def valores_shap(modelo: Pipeline, atributos: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Valores SHAP (log-odds) de cada linha e os atributos transformados que os geraram.
+def valores_shap(modelo: Pipeline, atributos: pd.DataFrame, semente: int = SEED) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Valores SHAP de cada linha e os atributos transformados que os geraram.
 
     A Regressão Logística usa o `LinearExplainer`, com até 1.000 linhas dos próprios dados,
-    sorteadas com a semente do projeto, como fundo; as
+    sorteadas com a semente recebida, como fundo; as
     árvores usam o `TreeExplainer`. Os dois explicam o estimador sobre a saída do
     pré-processador, então as colunas são as do espaço transformado.
     """
     transformados = modelo.named_steps["pre_processamento"].transform(atributos)
     estimador = modelo.named_steps["estimador"]
     if isinstance(estimador, LogisticRegression):
-        fundo = transformados.sample(n=min(len(transformados), MAXIMO_FUNDO_SHAP), random_state=SEED)
+        fundo = transformados.sample(n=min(len(transformados), MAXIMO_FUNDO_SHAP), random_state=semente)
         explicador = shap.LinearExplainer(estimador, shap.maskers.Independent(fundo, max_samples=len(fundo)))
     else:
         explicador = shap.TreeExplainer(estimador)
     valores = np.asarray(explicador.shap_values(transformados))
     if valores.ndim == 3:  # alguns explicadores devolvem uma matriz por classe
         valores = valores[..., 1]
-    return pd.DataFrame(valores, columns=transformados.columns, index=transformados.index), transformados
+    tabela = pd.DataFrame(valores, columns=transformados.columns, index=transformados.index)
+    base = np.asarray(explicador.expected_value).reshape(-1)
+    tabela.attrs["valor_base"] = float(base[1] if len(base) > 1 else base[0])
+    tabela.attrs["unidade"] = "probabilidade" if isinstance(estimador, RandomForestClassifier) else "log-odds"
+    return tabela, transformados
 
 
 def agregar_por_atributo(shap_valores: pd.DataFrame, originais: Sequence[str]) -> pd.DataFrame:
@@ -107,4 +113,4 @@ def agregar_por_atributo(shap_valores: pd.DataFrame, originais: Sequence[str]) -
     mapa = {coluna: atributo_original(coluna, originais) for coluna in shap_valores.columns}
     por_atributo = shap_valores.T.groupby(mapa).sum().T
     tabela = por_atributo.abs().mean().rename("shap_medio_absoluto").rename_axis("atributo").reset_index()
-    return tabela.sort_values("shap_medio_absoluto", ascending=False).reset_index(drop=True)
+    return tabela.sort_values(["shap_medio_absoluto", "atributo"], ascending=[False, True]).reset_index(drop=True)

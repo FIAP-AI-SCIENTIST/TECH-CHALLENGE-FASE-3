@@ -45,6 +45,8 @@ class Interpretacao:
     shap_por_atributo: pd.DataFrame
     shap_valores: pd.DataFrame
     transformados: pd.DataFrame
+    unidade_shap: str = "log-odds"
+    semente: int = SEED
 
 
 def interpretar(
@@ -60,7 +62,7 @@ def interpretar(
     amostra_permutacao = amostrar(tabela, n_permutacao, semente)
     amostra_shap = amostrar(tabela, n_shap, semente)
     atributos_shap = amostra_shap.atributos[list(trilha.atributos)]
-    shap_valores, transformados = valores_shap(modelo, atributos_shap)
+    shap_valores, transformados = valores_shap(modelo, atributos_shap, semente=semente)
     return Interpretacao(
         nativa=importancia_nativa(modelo),
         permutacao=importancia_por_permutacao(
@@ -69,6 +71,8 @@ def interpretar(
         shap_por_atributo=agregar_por_atributo(shap_valores, trilha.atributos),
         shap_valores=shap_valores,
         transformados=transformados,
+        unidade_shap=shap_valores.attrs["unidade"],
+        semente=semente,
     )
 
 
@@ -116,7 +120,7 @@ def gravar_interpretacao(
             "atributo",
             "shap_medio_absoluto",
             f"SHAP por atributo original - {titulo_trilha}",
-            "Média do |SHAP| (log-odds), One-Hot somado por atributo",
+            f"Média do |SHAP| ({resultado.unidade_shap}), One-Hot somado por atributo",
             f"interpretacao_shap_atributos_{prefixo}.png",
             diretorio_imagens,
         ),
@@ -126,6 +130,8 @@ def gravar_interpretacao(
             f"SHAP no teste - {titulo_trilha}",
             f"interpretacao_shap_resumo_{prefixo}.png",
             diretorio_imagens,
+            semente=resultado.semente,
+            unidade=resultado.unidade_shap,
         ),
     ]
     return caminhos

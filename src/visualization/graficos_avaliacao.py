@@ -9,6 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 import numpy as np
 from sklearn.metrics import roc_auc_score, roc_curve
 
@@ -56,7 +57,11 @@ def matriz_confusao(
             [matriz["falso_negativo"], matriz["verdadeiro_positivo"]],
         ]
     )
-    percentual_da_linha = valores / valores.sum(axis=1, keepdims=True)
+    totais_por_classe = valores.sum(axis=1, keepdims=True)
+    if (totais_por_classe == 0).any():
+        raise ValueError("A matriz precisa de registros nas duas classes reais.")
+
+    percentual_da_linha = valores / totais_por_classe
 
     figura, eixo = plt.subplots(figsize=(5.5, 4.5))
     imagem = eixo.imshow(percentual_da_linha, cmap="Blues", vmin=0, vmax=1)
@@ -75,7 +80,17 @@ def matriz_confusao(
     eixo.set_xticks([0, 1], [f"Previsto:\n{rotulos[0]}", f"Previsto:\n{rotulos[1]}"])
     eixo.set_yticks([0, 1], [f"Real:\n{rotulos[0]}", f"Real:\n{rotulos[1]}"])
     eixo.set_title(titulo)
-    figura.colorbar(imagem, ax=eixo, label="% da classe real", fraction=0.046, pad=0.04)
+    barra = figura.colorbar(
+        imagem,
+        ax=eixo,
+        label="% da classe real",
+        fraction=0.046,
+        pad=0.04,
+        format=FuncFormatter(
+            lambda valor, posicao: f"{_decimal(100 * valor, 1)}%"
+        ),
+    )
+    barra.update_ticks()
     return salvar_figura(figura, nome_arquivo, diretorio)
 
 
@@ -89,6 +104,8 @@ def curva_roc(
 ) -> Path:
     """Curva ROC do modelo contra a diagonal do acaso, com a AUC-ROC na legenda."""
     y, probabilidade = _validar_tamanhos(y_verdadeiro, probabilidades)
+    if not np.array_equal(np.unique(y), [0, 1]):
+        raise ValueError("A curva ROC precisa das duas classes reais: 0 e 1.")
     falsos_positivos, verdadeiros_positivos, _ = roc_curve(y, probabilidade)
     auc = roc_auc_score(y, probabilidade)
 
@@ -102,6 +119,12 @@ def curva_roc(
     eixo.set_title(titulo)
     eixo.grid(color="#e4e3df", linewidth=0.8)
     eixo.legend(loc="lower right")
+    eixo.xaxis.set_major_formatter(
+        FuncFormatter(lambda valor, posicao: _decimal(valor, 1))
+    )
+    eixo.yaxis.set_major_formatter(
+        FuncFormatter(lambda valor, posicao: _decimal(valor, 1))
+    )
     return salvar_figura(figura, nome_arquivo, diretorio)
 
 
@@ -134,4 +157,10 @@ def distribuicao_probabilidades(
     eixo.set_ylabel("Proporção dentro da classe")
     eixo.set_title(titulo)
     eixo.legend(loc="upper left", bbox_to_anchor=(1.01, 1.0))
+    eixo.xaxis.set_major_formatter(
+        FuncFormatter(lambda valor, posicao: _decimal(valor, 1))
+    )
+    eixo.yaxis.set_major_formatter(
+        FuncFormatter(lambda valor, posicao: _decimal(valor, 2))
+    )
     return salvar_figura(figura, nome_arquivo, diretorio)
