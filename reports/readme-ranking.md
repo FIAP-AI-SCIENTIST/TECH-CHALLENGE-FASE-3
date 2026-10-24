@@ -1,58 +1,39 @@
-# Ranking de risco dos municípios
+# Ranking dos municípios: metas, taxa observada e perfil
 
-Fragmento do README, a consolidar na unidade de documentação. Gerado por `python -m src.modeling.ranking_municipios` (cerca de 4 minutos) a partir da configuração dos modelos em `models/`.
+Os arquivos são gerados por `python -m src.modeling.ranking_municipios`. O tempo depende do computador e do ambiente.
 
 ## Como é feito
 
-O risco de cada município vem de um modelo que **não o viu**. A tabela é dividida em 5 dobras por município (`GroupKFold`), e cada dobra é prevista por uma cópia do modelo ajustada nas outras quatro. O algoritmo e os hiperparâmetros são os escolhidos pelo treino; só o ajuste é refeito. Usar o modelo final daria um risco otimista aos 80% de municípios em que ele foi treinado.
+As probabilidades são calculadas fora da dobra: cada registro é previsto por um modelo ajustado sem os registros do seu município. São cinco dobras por município. O algoritmo e os hiperparâmetros permanecem os escolhidos no treinamento; os modelos salvos não são sobrescritos. Em T1, cada ajuste usa até 100.000 registros e prevê todas as linhas da dobra.
 
-As previsões fora da dobra têm AUC-ROC de **0,777 em T2** e **0,628 em T1**, iguais às da validação cruzada do treino. No ranking de meta, a proporção real de municípios que não atingiram a meta cresce com o quintil de risco:
+A avaliação descreve os dados disponíveis. Ela não é uma validação temporal nem uma avaliação independente de todo o processo de seleção de hiperparâmetros.
 
-| Quintil de risco | 1 (menor) | 2 | 3 | 4 | 5 (maior) |
-|---|---|---|---|---|---|
-| Não atingiram a meta de fato | 13,4% | 32,2% | 46,7% | 58,8% | **82,9%** |
+## Três arquivos, três perguntas
 
-## Dois rankings, duas perguntas
+| Arquivo em reports/ | Pergunta | Limite de interpretação |
+|---|---|---|
+| `ranking_risco_meta_municipios.csv` | Quais municípios apresentam maior probabilidade estimada de não atingir a meta de 2024? | Não demonstra previsão para anos futuros |
+| `ranking_taxa_nao_alfabetizados_municipios.csv` | Quais municípios apresentam maior proporção observada de registros de alunos não alfabetizados? | É descrição do resultado observado, não previsão individual |
+| `ranking_abaixo_do_perfil_municipios.csv` | Onde a taxa observada de não alfabetização supera mais a taxa estimada pelo modelo? | Mede excesso em relação ao perfil, não o nível absoluto de necessidade educacional |
 
-**Risco de não atingir a meta não é o mesmo que risco educacional.** O topo do ranking de meta são municípios com alfabetização alta e meta alta: Dom Macedo Costa (BA) alfabetizava 85,9% em 2023 e tinha meta de 80% para 2024. A correlação entre os dois rankings abaixo é até negativa (−0,21). Por isso o projeto entrega os dois, e cada um responde a uma pergunta.
+O ranking de taxa observada e o de excesso incluem municípios com pelo menos 50 registros. Esse limite reduz instabilidade, mas não elimina incerteza. As colunas de contagem permitem considerar o tamanho da base antes de priorizar ações. O excesso pode refletir atributos ausentes, erros do modelo ou variação amostral; não identifica causa nem prova falha de gestão.
 
-### 1. Risco de não atingir a meta (T2): `ranking_risco_meta_municipios.csv`
+## Período e cobertura
 
-Responde: **"como prever municípios que podem não atingir metas futuras?"**
+T1 agrega os registros com caderno preenchido de 2023 e 2024, conforme a tabela utilizada no treinamento. A contagem representa registros, não alunos únicos acompanhados entre anos. Os rankings de taxa observada e excesso incluem 5.134 municípios, com mediana de 236 registros por município. A taxa não deve ser apresentada como resultado exclusivo de 2024. Alterar o período produz outra análise e exige recalcular os arquivos.
 
-5.226 municípios da rede municipal, do maior para o menor risco, com a probabilidade de não atingir a meta, a posição geral e na UF, o quintil e, para contexto, a taxa de 2023, a meta de 2024, o resultado real e as taxas de não alfabetizados real e esperada.
+T2 avalia a meta de 2024 usando atributos disponíveis para essa tarefa, incluindo informações de 2023. São 5.226 municípios. AC, DF e RR não estão representados no ranking T2. A cobertura é limitada aos municípios com dados necessários e rótulo disponível; a lista de UFs presentes e ausentes está no JSON. Ausência de um município ou estado no arquivo não significa baixo risco.
 
-![Alto risco por UF](../images/ranking_alto_risco_por_uf.png)
+O ranking usa informações compartilhadas por municípios do mesmo estado. Não foi demonstrado que a posição dentro da UF seja mais confiável para prever anos futuros. A posição estadual é somente uma forma de organizar os resultados desta análise.
 
-- **O risco é concentrado por estado:** 98,8% dos municípios do Rio Grande do Sul e 87,6% dos da Bahia estão no quintil de maior risco; nenhum do Ceará, de Minas Gerais, de Pernambuco, de Goiás, do Espírito Santo, de Mato Grosso ou de Mato Grosso do Sul está.
-- Isso repete o efeito de estado de [readme-treino-t2.md](readme-treino-t2.md): o ranking usa o desempenho dos outros municípios do estado em 2024. Para um ano futuro, em que esse desempenho ainda não é conhecido, a ordem **dentro de cada UF** (`posicao_na_uf`) é mais confiável que a ordem geral.
+## Evidências e uso
 
-### 2. Abaixo do perfil (T1): `ranking_abaixo_do_perfil_municipios.csv`
+`ranking_municipios.json` registra as AUCs fora da dobra, cobertura, quantidade de municípios, mediana de registros incluídos e os maiores valores de cada ranking. As probabilidades estimadas, taxas observadas e excessos devem permanecer identificados separadamente.
 
-Responde: **"quais municípios apresentam maior risco educacional?"**
+![Municípios no quintil de maior risco de meta por UF](../images/ranking_alto_risco_por_uf.png)
 
-Para cada município, a taxa de não alfabetizados **esperada** pelo perfil (UF, região, IDHM, rede e caderno, prevista fora da dobra pelo modelo de T1) é comparada com a **real**. O excesso (real menos esperada) aponta os municípios que estão pior do que o perfil prevê: o problema ali não se explica pelo território, e é onde uma investigação local tem mais a encontrar. Só entram os 5.134 municípios com pelo menos 50 alunos, porque a taxa de poucos alunos é ruidosa (a mediana é de 122).
+As comparações devem apoiar investigação e revisão humana, considerando população atendida, cobertura e contexto local. Nenhum desses rankings determina sozinho uma ação pública ou demonstra o efeito de uma política.
 
-Os dez maiores excessos:
+## Organização técnica
 
-| Município | UF | Alunos | Não alfabetizados (real) | Esperado pelo perfil | Excesso |
-|---|---|---|---|---|---|
-| Filadélfia | TO | 138 | 87,7% | 49,6% | +38,1 p.p. |
-| Morro Cabeça no Tempo | PI | 106 | 79,2% | 41,7% | +37,6 p.p. |
-| Cuité de Mamanguape | PB | 95 | 81,1% | 44,5% | +36,6 p.p. |
-| Santa Rosa do Purus | AC | 58 | 84,5% | 49,0% | +35,5 p.p. |
-| São José do Bonfim | PB | 58 | 79,3% | 44,3% | +35,0 p.p. |
-| Barra do Ouro | TO | 148 | 85,8% | 51,2% | +34,6 p.p. |
-| Porto de Pedras | AL | 268 | 71,3% | 37,3% | +34,0 p.p. |
-| Lagoa do Tocantins | TO | 114 | 82,5% | 49,3% | +33,1 p.p. |
-| Francisco Dumont | MG | 70 | 67,1% | 35,5% | +31,7 p.p. |
-| Babaçulândia | TO | 166 | 80,7% | 49,3% | +31,4 p.p. |
-
-O outro extremo do arquivo também interessa: municípios **muito melhores** do que o perfil prevê, como Coruripe (AL, 1.597 alunos, 50 p.p. abaixo do esperado), são candidatos a boas práticas a estudar.
-
-## Limitações
-
-- O ranking de meta herda o efeito de estado e vale para 2024; não foi validado em outro ano, porque só há um ano com rótulo.
-- O perfil de T1 só conhece atributos do território. O excesso mede o que o território não explica, não a causa: pode ser gestão, contexto local não medido ou ruído de uma turma pequena.
-- Um município com 50 a 100 alunos ainda tem taxa instável; o número de alunos está no arquivo para ser considerado.
-- Associação, não causa: estar no topo de um ranking indica onde olhar primeiro, não o que fazer.
+O módulo em modeling coordena o cálculo e a geração dos artefatos, incluindo uma função de visualization. Essa responsabilidade de orquestração é uma exceção documentada à separação das camadas. A reorganização pode ser feita posteriormente, preservando o comando atual.

@@ -6,12 +6,13 @@ pelo treino (algoritmo e hiperparâmetros) e prevê cada município fora da dobr
 - `reports/ranking_risco_meta_municipios.csv`: a probabilidade de não atingir a meta
   de 2024 (T2), do maior para o menor risco, com a posição geral e na UF, o quintil e
   as taxas de não alfabetizados real e esperada pelo perfil (T1);
+- `reports/ranking_taxa_nao_alfabetizados_municipios.csv`: taxa observada por município;
 - `reports/ranking_abaixo_do_perfil_municipios.csv`: os municípios com mais não
   alfabetizados do que o perfil (UF, região, IDHM, rede e caderno) prevê;
 - `reports/ranking_municipios.json`: o resumo e a AUC-ROC das previsões fora da dobra;
 - `images/ranking_alto_risco_por_uf.png`: a proporção de municípios no quintil de maior risco por UF.
 
-Leva cerca de 4 minutos, quase todos da T1.
+O tempo depende do computador e do ambiente. O ajuste de T1 ocorre em cada dobra.
 """
 
 import json
@@ -23,16 +24,15 @@ from sklearn.metrics import roc_auc_score
 
 from src.config import DIRETORIO_IMAGENS, DIRETORIO_RELATORIOS
 from src.modeling.ranking import montar_ranking, probabilidades_fora_da_dobra, taxa_por_municipio
-from src.modeling.treino import carregar_modelo
+from src.modeling.treino import CASAS_DECIMAIS, carregar_modelo
 from src.modeling.treino_aluno import MAX_LINHAS_TREINO, carregar_tabela_t1
 from src.modeling.treino_municipio import carregar_tabela_t2
 from src.preprocessing.loader import carregar_tabela
 from src.visualization.graficos_interpretacao import barras_importancia
 
-# A taxa municipal de poucos alunos é ruidosa (a mediana é de 122 alunos em 2024).
-# Municípios com menos alunos que isto ficam fora do ranking abaixo do perfil.
+# O limite reduz a instabilidade de taxas baseadas em poucos registros.
+# O perfil agrega os registros preenchidos dos anos disponíveis em T1.
 MINIMO_ALUNOS: int = 50
-CASAS_DECIMAIS: int = 4
 
 
 def abaixo_do_perfil(perfil: pd.DataFrame, minimo_alunos: int = MINIMO_ALUNOS) -> pd.DataFrame:
@@ -50,6 +50,16 @@ def abaixo_do_perfil(perfil: pd.DataFrame, minimo_alunos: int = MINIMO_ALUNOS) -
     return tabela
 
 
+def ranking_taxa_observada(perfil: pd.DataFrame, minimo_alunos: int = MINIMO_ALUNOS) -> pd.DataFrame:
+    """Taxa observada de não alfabetizados, sem confundi-la com excesso sobre o perfil."""
+    tabela = perfil.loc[perfil["n_alunos"] >= minimo_alunos].copy()
+    tabela = tabela.sort_values(
+        ["taxa_nao_alfabetizados_real", "id_municipio"], ascending=[False, True]
+    ).reset_index(drop=True)
+    tabela.insert(0, "posicao", range(1, len(tabela) + 1))
+    return tabela
+
+
 def proporcao_alto_risco_por_uf(ranking: pd.DataFrame) -> pd.DataFrame:
     """Municípios e proporção no quintil 5 (maior risco) em cada UF, da maior para a menor."""
     return (
@@ -57,7 +67,7 @@ def proporcao_alto_risco_por_uf(ranking: pd.DataFrame) -> pd.DataFrame:
         .groupby("sigla_uf")
         .agg(municipios=("no_quintil_5", "size"), proporcao_quintil_5=("no_quintil_5", "mean"))
         .reset_index()
-        .sort_values("proporcao_quintil_5", ascending=False)
+        .sort_values(["proporcao_quintil_5", "sigla_uf"], ascending=[False, True])
         .reset_index(drop=True)
     )
 
@@ -78,7 +88,7 @@ def _perfil_t1() -> tuple[pd.DataFrame, float]:
 
 
 def executar() -> dict[str, object]:
-    """Monta os dois rankings, grava os arquivos e devolve o resumo."""
+    """Grava rankings de meta, taxa observada e excesso em relação ao perfil."""
     municipios = carregar_tabela("dim_municipio")[["id_municipio", "nome", "sigla_uf", "nome_regiao"]]
 
     tabela_t2 = carregar_tabela_t2()
@@ -103,10 +113,12 @@ def executar() -> dict[str, object]:
         validate="one_to_one",
     )
     abaixo = abaixo_do_perfil(perfil)
+    observado = ranking_taxa_observada(perfil)
     por_uf = proporcao_alto_risco_por_uf(ranking)
 
     DIRETORIO_RELATORIOS.mkdir(parents=True, exist_ok=True)
     ranking.round(CASAS_DECIMAIS).to_csv(DIRETORIO_RELATORIOS / "ranking_risco_meta_municipios.csv", index=False)
+    observado.round(CASAS_DECIMAIS).to_csv(DIRETORIO_RELATORIOS / "ranking_taxa_nao_alfabetizados_municipios.csv", index=False)
     abaixo.round(CASAS_DECIMAIS).to_csv(DIRETORIO_RELATORIOS / "ranking_abaixo_do_perfil_municipios.csv", index=False)
     barras_importancia(
         por_uf,
@@ -120,6 +132,13 @@ def executar() -> dict[str, object]:
     )
 
     resumo = {
+        "escopo_t2": "meta de 2024; sem validação temporal",
+        "escopo_t1": "registros com caderno preenchido, agregados de 2023 e 2024; não identifica alunos únicos entre anos",
+        "municipios_no_ranking_taxa_observada": int(len(observado)),
+        "mediana_registros_t1_incluidos": float(observado["n_alunos"].median()),
+        "dez_maiores_taxas_observadas": observado.head(10)[["nome", "sigla_uf", "n_alunos", "taxa_nao_alfabetizados_real"]].round(CASAS_DECIMAIS).to_dict(orient="records"),
+        "ufs_cobertas_t2": sorted(ranking["sigla_uf"].unique().tolist()),
+        "ufs_ausentes_t2": sorted(set(municipios["sigla_uf"].dropna()) - set(ranking["sigla_uf"])),
         "municipios_no_ranking_de_meta": int(len(ranking)),
         "auc_roc_fora_da_dobra_t2": round(float(roc_auc_score(tabela_t2.alvo, probabilidades_t2)), CASAS_DECIMAIS),
         "auc_roc_fora_da_dobra_t1": round(auc_t1, CASAS_DECIMAIS),

@@ -13,9 +13,16 @@ Junta as peças de `modeling` e `evaluation` numa ordem fixa, que vale para T1 e
 O teste só é tocado no passo 6. Os limites de linhas servem para a trilha do
 aluno, grande demais para a busca: a amostra é sorteada depois da separação, então
 o teste é sempre avaliado inteiro.
+
+Decisão de organização: este módulo é o orquestrador do experimento
+supervisionado e, por isso, coordena treinamento, avaliação e gravação
+dos relatórios. Ele permanece em `modeling` como exceção à direção
+de dependências adotada no projeto. Os cálculos de métricas e diagnóstico
+continuam implementados em `evaluation`.
 """
 
 import json
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -89,7 +96,7 @@ def _arredondar(valor: Any) -> Any:
     if isinstance(valor, bool):
         return valor
     if isinstance(valor, float):
-        return round(valor, CASAS_DECIMAIS)
+        return round(valor, CASAS_DECIMAIS) if math.isfinite(valor) else None
     if hasattr(valor, "item"):  # escalares do numpy
         return _arredondar(valor.item())
     return valor
@@ -112,9 +119,17 @@ def treinar_trilha(
     n_dobras: int = N_DOBRAS_PADRAO,
     semente: int = SEED,
 ) -> tuple[dict[str, Any], Pipeline]:
-    """Roda os seis passos do módulo e devolve o relatório (pronto para JSON) e o modelo final.
+    """Devolve o relatório de avaliação e o modelo final.
 
-    O modelo final é o candidato escolhido, reajustado em treino + validação.
+    As métricas do bloco `validacao` são calculadas com o modelo ajustado
+    somente no treino, antes do reajuste final.
+
+    O modelo retornado é reajustado em treino + validação e usado para
+    calcular as métricas do bloco `teste`. Ele não deve ser usado para
+    reproduzir as métricas de validação, pois já foi treinado nesses dados.
+
+    Para curvas ou diagnósticos de validação, deve-se usar um modelo
+    ajustado exclusivamente no treino.
     """
     nomes = [candidato.nome for candidato in candidatos]
     if len(set(nomes)) != len(nomes):

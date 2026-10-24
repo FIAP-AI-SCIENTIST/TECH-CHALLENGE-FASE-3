@@ -1,4 +1,101 @@
 {
+  "escopo_t2": "meta de 2024; sem validação temporal",
+  "escopo_t1": "registros com caderno preenchido, agregados de 2023 e 2024; não identifica alunos únicos entre anos",
+  "municipios_no_ranking_taxa_observada": 5134,
+  "mediana_registros_t1_incluidos": 236.0,
+  "dez_maiores_taxas_observadas": [
+    {
+      "nome": "Macururé",
+      "sigla_uf": "BA",
+      "n_alunos": 83,
+      "taxa_nao_alfabetizados_real": 0.9157
+    },
+    {
+      "nome": "Filadélfia",
+      "sigla_uf": "TO",
+      "n_alunos": 138,
+      "taxa_nao_alfabetizados_real": 0.8768
+    },
+    {
+      "nome": "Pedrinhas",
+      "sigla_uf": "SE",
+      "n_alunos": 116,
+      "taxa_nao_alfabetizados_real": 0.8707
+    },
+    {
+      "nome": "Buritirama",
+      "sigla_uf": "BA",
+      "n_alunos": 282,
+      "taxa_nao_alfabetizados_real": 0.8582
+    },
+    {
+      "nome": "Barra do Ouro",
+      "sigla_uf": "TO",
+      "n_alunos": 148,
+      "taxa_nao_alfabetizados_real": 0.8581
+    },
+    {
+      "nome": "Santa Rosa do Purus",
+      "sigla_uf": "AC",
+      "n_alunos": 58,
+      "taxa_nao_alfabetizados_real": 0.8448
+    },
+    {
+      "nome": "Arataca",
+      "sigla_uf": "BA",
+      "n_alunos": 133,
+      "taxa_nao_alfabetizados_real": 0.8421
+    },
+    {
+      "nome": "Muribeca",
+      "sigla_uf": "SE",
+      "n_alunos": 75,
+      "taxa_nao_alfabetizados_real": 0.84
+    },
+    {
+      "nome": "Poço Branco",
+      "sigla_uf": "RN",
+      "n_alunos": 156,
+      "taxa_nao_alfabetizados_real": 0.8397
+    },
+    {
+      "nome": "Casa Nova",
+      "sigla_uf": "BA",
+      "n_alunos": 1095,
+      "taxa_nao_alfabetizados_real": 0.8356
+    }
+  ],
+  "ufs_cobertas_t2": [
+    "AL",
+    "AM",
+    "AP",
+    "BA",
+    "CE",
+    "ES",
+    "GO",
+    "MA",
+    "MG",
+    "MS",
+    "MT",
+    "PA",
+    "PB",
+    "PE",
+    "PI",
+    "PR",
+    "RJ",
+    "RN",
+    "RO",
+    "RS",
+    "SC",
+    "SE",
+    "SP",
+    "TO"
+  ],
+  "ufs_ausentes_t2": [
+    "AC",
+    "DF",
+    "RR"
+  ],
   "municipios_no_ranking_de_meta": 5226,
   "auc_roc_fora_da_dobra_t2": 0.7768,
   "auc_roc_fora_da_dobra_t1": 0.6276,
@@ -205,11 +302,6 @@
       "proporcao_quintil_5": 0.0126
     },
     {
-      "sigla_uf": "GO",
-      "municipios": 242,
-      "proporcao_quintil_5": 0.0
-    },
-    {
       "sigla_uf": "CE",
       "municipios": 183,
       "proporcao_quintil_5": 0.0
@@ -220,8 +312,8 @@
       "proporcao_quintil_5": 0.0
     },
     {
-      "sigla_uf": "PE",
-      "municipios": 184,
+      "sigla_uf": "GO",
+      "municipios": 242,
       "proporcao_quintil_5": 0.0
     },
     {
@@ -237,6 +329,11 @@
     {
       "sigla_uf": "MT",
       "municipios": 139,
+      "proporcao_quintil_5": 0.0
+    },
+    {
+      "sigla_uf": "PE",
+      "municipios": 184,
       "proporcao_quintil_5": 0.0
     }
   ]

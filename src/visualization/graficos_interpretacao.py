@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import shap
 
-from src.config import DIRETORIO_IMAGENS
+from src.config import DIRETORIO_IMAGENS, SEED
 from src.visualization.graficos import salvar_figura
 from src.visualization.graficos_avaliacao import COR_SERIE_1, COR_SERIE_2
 
@@ -68,6 +68,8 @@ def resumo_shap(
     nome_arquivo: str,
     diretorio: Path = DIRETORIO_IMAGENS,
     maximo: int = MAXIMO_PADRAO,
+    semente: int = SEED,
+    unidade: str = "log-odds",
 ) -> Path:
     """Gráfico de resumo do SHAP (beeswarm): um ponto por previsão, cor pelo valor do atributo."""
     shap.summary_plot(
@@ -76,6 +78,7 @@ def resumo_shap(
         feature_names=[nome_legivel(coluna) for coluna in transformados.columns],
         max_display=maximo,
         show=False,
+        rng=semente,
         plot_size=(8, max(3.0, 0.4 * min(maximo, transformados.shape[1]) + 1.5)),
     )
     figura = plt.gcf()
@@ -83,5 +86,5 @@ def resumo_shap(
     barra_de_cores.set_ylabel("Valor do atributo")
     barra_de_cores.set_yticks(barra_de_cores.get_yticks(), ["Baixo", "Alto"])
     figura.axes[0].set_title(titulo)
-    figura.axes[0].set_xlabel("Valor SHAP (contribuição para o log-odds do risco)")
+    figura.axes[0].set_xlabel(f"Valor SHAP (contribuição em {unidade} para o risco)")
     return salvar_figura(figura, nome_arquivo, diretorio)

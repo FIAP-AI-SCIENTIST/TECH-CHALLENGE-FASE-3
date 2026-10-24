@@ -1,0 +1,325 @@
+{
+  "atributos": [
+    "idhm",
+    "idhm_educacao",
+    "idhm_renda",
+    "idhm_longevidade",
+    "taxa_alfabetizacao_2023",
+    "taxa_alfabetizacao_2024"
+  ],
+  "n_municipios_perfil": 5352,
+  "n_municipios_agrupados": 5222,
+  "excluidos": [
+    "1200013",
+    "1200054",
+    "1200104",
+    "1200138",
+    "1200179",
+    "1200203",
+    "1200252",
+    "1200302",
+    "1200328",
+    "1200336",
+    "1200344",
+    "1200351",
+    "1200385",
+    "1200393",
+    "1200401",
+    "1200427",
+    "1200435",
+    "1200450",
+    "1200500",
+    "1200609",
+    "1200708",
+    "1200807",
+    "1300607",
+    "1300839",
+    "1301506",
+    "1301803",
+    "1304005",
+    "1304203",
+    "1304401",
+    "1501253",
+    "1502400",
+    "1503754",
+    "1504752",
+    "1505650",
+    "1506609",
+    "1507300",
+    "1703800",
+    "2109502",
+    "2202091",
+    "2211605",
+    "2304004",
+    "2402600",
+    "2403509",
+    "2404507",
+    "2406007",
+    "2406155",
+    "2406205",
+    "2406809",
+    "2407500",
+    "2408607",
+    "2408706",
+    "2412559",
+    "2414456",
+    "2512077",
+    "2904506",
+    "2910503",
+    "2912103",
+    "2928307",
+    "3100906",
+    "3106101",
+    "3107703",
+    "3112505",
+    "3126307",
+    "3128204",
+    "3133907",
+    "3142502",
+    "3143708",
+    "3145406",
+    "3147501",
+    "3149408",
+    "3151909",
+    "3157252",
+    "3163409",
+    "3166600",
+    "3171105",
+    "3305703",
+    "3306156",
+    "3504701",
+    "3507209",
+    "3510153",
+    "3528403",
+    "3536802",
+    "3547304",
+    "4110052",
+    "4113254",
+    "4128625",
+    "4200903",
+    "4201109",
+    "4202073",
+    "4204350",
+    "4205159",
+    "4205191",
+    "4207205",
+    "4210555",
+    "4210704",
+    "4211108",
+    "4212254",
+    "4212650",
+    "4212700",
+    "4216008",
+    "4216404",
+    "4217808",
+    "4218756",
+    "4220000",
+    "4300307",
+    "4301404",
+    "4301750",
+    "4304630",
+    "4305116",
+    "4306304",
+    "4306759",
+    "4306932",
+    "4307831",
+    "4309126",
+    "4309258",
+    "4309407",
+    "4309951",
+    "4310751",
+    "4311130",
+    "4311205",
+    "4311429",
+    "4314407",
+    "4319364",
+    "4320305",
+    "4321832",
+    "5006275",
+    "5108105",
+    "5200506",
+    "5213400",
+    "5220058"
+  ],
+  "pca": {
+    "variancia_alvo": 0.95,
+    "n_componentes": 4,
+    "variancia_acumulada": [
+      0.631194,
+      0.86778,
+      0.928487,
+      0.978755,
+      0.999943,
+      1.0
+    ]
+  },
+  "kmeans": {
+    "regra": "K de maior silhouette médio",
+    "escolhido_pela_regra": true,
+    "k_escolhido": 2,
+    "varredura": [
+      {
+        "k": 2,
+        "inercia": 15773.10681,
+        "silhouette": 0.417688,
+        "davies_bouldin": 0.960947
+      },
+      {
+        "k": 3,
+        "inercia": 12120.833871,
+        "silhouette": 0.364173,
+        "davies_bouldin": 1.069937
+      },
+      {
+        "k": 4,
+        "inercia": 10264.01788,
+        "silhouette": 0.272378,
+        "davies_bouldin": 1.254594
+      },
+      {
+        "k": 5,
+        "inercia": 8860.190994,
+        "silhouette": 0.271958,
+        "davies_bouldin": 1.132221
+      },
+      {
+        "k": 6,
+        "inercia": 8140.812376,
+        "silhouette": 0.241004,
+        "davies_bouldin": 1.2852
+      },
+      {
+        "k": 7,
+        "inercia": 7505.704719,
+        "silhouette": 0.226523,
+        "davies_bouldin": 1.30025
+      },
+      {
+        "k": 8,
+        "inercia": 6955.612822,
+        "silhouette": 0.224279,
+        "davies_bouldin": 1.235122
+      },
+      {
+        "k": 9,
+        "inercia": 6581.070974,
+        "silhouette": 0.225913,
+        "davies_bouldin": 1.253804
+      },
+      {
+        "k": 10,
+        "inercia": 6262.62962,
+        "silhouette": 0.219532,
+        "davies_bouldin": 1.300925
+      }
+    ],
+    "tamanhos": {
+      "0": 2246,
+      "1": 2976
+    }
+  },
+  "dbscan": {
+    "min_pts": 8,
+    "eps_escolhido": 0.559802,
+    "varredura": [
+      {
+        "eps": 0.423837,
+        "n_clusters": 9,
+        "pct_ruido": 0.289544,
+        "silhouette": -0.310466,
+        "davies_bouldin": 1.021437
+      },
+      {
+        "eps": 0.457019,
+        "n_clusters": 6,
+        "pct_ruido": 0.217541,
+        "silhouette": -0.134019,
+        "davies_bouldin": 0.87264
+      },
+      {
+        "eps": 0.497977,
+        "n_clusters": 1,
+        "pct_ruido": 0.148602,
+        "silhouette": null,
+        "davies_bouldin": null
+      },
+      {
+        "eps": 0.559802,
+        "n_clusters": 2,
+        "pct_ruido": 0.085599,
+        "silhouette": 0.268782,
+        "davies_bouldin": 0.621246
+      },
+      {
+        "eps": 0.670091,
+        "n_clusters": 1,
+        "pct_ruido": 0.035619,
+        "silhouette": null,
+        "davies_bouldin": null
+      },
+      {
+        "eps": 0.777165,
+        "n_clusters": 1,
+        "pct_ruido": 0.013788,
+        "silhouette": null,
+        "davies_bouldin": null
+      },
+      {
+        "eps": 1.091236,
+        "n_clusters": 1,
+        "pct_ruido": 0.001723,
+        "silhouette": null,
+        "davies_bouldin": null
+      }
+    ],
+    "n_outliers": 447
+  },
+  "avaliacao": {
+    "kmeans": {
+      "n_clusters": 2,
+      "pct_ruido": 0.0,
+      "silhouette": 0.417688,
+      "davies_bouldin": 0.960947,
+      "silhouette_por_cluster": {
+        "0": 0.352493,
+        "1": 0.466892
+      },
+      "pct_fronteira": 0.062045
+    },
+    "ward": {
+      "n_clusters": 2,
+      "pct_ruido": 0.0,
+      "silhouette": 0.412162,
+      "davies_bouldin": 0.978247
+    },
+    "dbscan": {
+      "n_clusters": 2,
+      "pct_ruido": 0.085599,
+      "silhouette": 0.268782,
+      "davies_bouldin": 0.621246
+    }
+  },
+  "complementar": {
+    "descricao": "leitura exploratória com K=3, escolhida depois de ver os resultados e não pela regra do K",
+    "k": 3,
+    "escolhido_pela_regra": false,
+    "avaliacao": {
+      "n_clusters": 3,
+      "pct_ruido": 0.0,
+      "silhouette": 0.364173,
+      "davies_bouldin": 1.069937,
+      "silhouette_por_cluster": {
+        "0": 0.363215,
+        "1": 0.256617,
+        "2": 0.409705
+      },
+      "pct_fronteira": 0.097281
+    },
+    "concordancia_com_ward": 0.806013,
+    "tamanhos": {
+      "0": 1423,
+      "1": 1121,
+      "2": 2678
+    }
+  }
+}

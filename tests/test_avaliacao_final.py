@@ -7,6 +7,7 @@ from src.config import ColunasTrilha
 from src.evaluation.avaliacao_final import conferir_com_relatorio, desenhar_avaliacao
 from src.evaluation.metricas import calcular_metricas
 from src.modeling.pipeline_modelo import montar_pipeline
+from src.evaluation import avaliacao_final
 
 ROTULOS = ("Alfabetizado", "Não alfabetizado")
 
@@ -43,3 +44,77 @@ def test_conferencia_recusa_modelo_desatualizado() -> None:
     relatorio = {"teste": {**calcular_metricas(y, probabilidades), "auc_roc": 0.99}}
     with pytest.raises(RuntimeError, match="treino"):
         conferir_com_relatorio(calcular_metricas(y, probabilidades), relatorio)
+
+
+def test_conferencia_recusa_auc_pr_diferente() -> None:
+    y, probabilidades = _previsoes()
+    metricas = calcular_metricas(y, probabilidades)
+
+    relatorio = {
+        "teste": {
+            **metricas,
+            "auc_pr": 0.0,
+        }
+    }
+
+    with pytest.raises(RuntimeError, match="treino"):
+        conferir_com_relatorio(metricas, relatorio)
+
+
+def test_conferencia_recusa_matriz_de_confusao_diferente() -> None:
+    y, probabilidades = _previsoes()
+    metricas = calcular_metricas(y, probabilidades)
+
+    matriz_alterada = metricas["matriz_confusao"].copy()
+    matriz_alterada["falso_positivo"] += 1
+
+    relatorio = {
+        "teste": {
+            **metricas,
+            "matriz_confusao": matriz_alterada,
+        }
+    }
+
+    with pytest.raises(RuntimeError, match="treino"):
+        conferir_com_relatorio(metricas, relatorio)
+
+
+def test_desenho_usa_o_mesmo_limiar_na_matriz_e_no_histograma(monkeypatch):
+    capturado = {}
+
+    def capturar_matriz(matriz, rotulos, titulo, *args):
+        capturado["matriz"] = matriz
+        capturado["titulo"] = titulo
+
+    def capturar_histograma(*args, **kwargs):
+        capturado["limiar_histograma"] = kwargs["limiar"]
+
+    monkeypatch.setattr(avaliacao_final, "LIMIAR_PADRAO", 0.7)
+    monkeypatch.setattr(
+        avaliacao_final, "matriz_confusao", capturar_matriz
+    )
+    monkeypatch.setattr(
+        avaliacao_final, "curva_roc", lambda *args: None
+    )
+    monkeypatch.setattr(
+        avaliacao_final,
+        "distribuicao_probabilidades",
+        capturar_histograma,
+    )
+
+    avaliacao_final.desenhar_avaliacao(
+        "teste",
+        [0, 0, 1, 1],
+        [0.1, 0.6, 0.65, 0.9],
+        ROTULOS,
+        "Modelo",
+    )
+
+    assert capturado["matriz"] == {
+        "verdadeiro_negativo": 2,
+        "falso_positivo": 0,
+        "falso_negativo": 1,
+        "verdadeiro_positivo": 1,
+    }
+    assert capturado["limiar_histograma"] == 0.7
+    assert "limiar 0,7" in capturado["titulo"]

@@ -7,8 +7,11 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from src.config import ColunasTrilha
+from src.modeling.pipeline_modelo import montar_pipeline
+from src.modeling.separacao import separar_por_municipio
 from src.modeling.treino import (
     Candidato,
+    _arredondar,
     amostrar,
     carregar_modelo,
     conjunto_de_teste,
@@ -17,6 +20,7 @@ from src.modeling.treino import (
     treinar_trilha,
 )
 from src.preprocessing.tabelas import TabelaModelagem
+from src.evaluation.metricas import calcular_metricas
 
 TRILHA = ColunasTrilha(categoricas=("cor", "nome_regiao"), numericas=("x",), proibidas=())
 CANDIDATOS = (
@@ -80,10 +84,35 @@ def test_escolhe_o_candidato_de_maior_auc_roc_de_validacao_cruzada() -> None:
     assert relatorio["modelo_escolhido"] == max(candidatos, key=candidatos.get)
 
 
-def test_nenhum_municipio_aparece_em_dois_conjuntos() -> None:
-    relatorio, _ = treinar_trilha(TRILHA, _tabela(), CANDIDATOS)
-    municipios = [relatorio["tamanhos"][conjunto]["municipios"] for conjunto in ("treino", "validacao", "teste")]
-    assert sum(municipios) == 80
+def test_rotulos_do_teste_nao_influenciam_a_selecao_do_modelo() -> None:
+    original = _tabela()
+    _, _, teste = separar_por_municipio(original)
+
+    alvo_alterado = original.alvo.copy()
+    mascara_teste = original.grupos.isin(teste.grupos)
+    alvo_alterado.loc[mascara_teste] = (
+        1 - alvo_alterado.loc[mascara_teste]
+    )
+
+    alterada = TabelaModelagem(
+        atributos=original.atributos.copy(),
+        alvo=alvo_alterado,
+        grupos=original.grupos.copy(),
+    )
+
+    antes, _ = treinar_trilha(TRILHA, original, CANDIDATOS)
+    depois, _ = treinar_trilha(TRILHA, alterada, CANDIDATOS)
+
+    for campo in (
+        "baselines",
+        "candidatos",
+        "comparacao",
+        "modelo_escolhido",
+        "validacao",
+    ):
+        assert antes[campo] == depois[campo], campo
+
+    assert antes["teste"] != depois["teste"]
 
 
 def test_limite_de_linhas_reduz_treino_e_validacao_mas_nao_o_teste() -> None:
@@ -95,11 +124,41 @@ def test_limite_de_linhas_reduz_treino_e_validacao_mas_nao_o_teste() -> None:
     assert limitado["tamanhos"]["teste"]["linhas"] == completo["tamanhos"]["teste"]["linhas"]
 
 
-def test_modelo_final_preve_probabilidades_para_dados_novos() -> None:
+def test_modelo_final_corresponde_ao_reajuste_em_treino_e_validacao() -> None:
     tabela = _tabela()
-    _, modelo = treinar_trilha(TRILHA, tabela, CANDIDATOS)
-    probabilidades = modelo.predict_proba(tabela.atributos.head(5))[:, 1]
-    assert ((probabilidades >= 0) & (probabilidades <= 1)).all()
+    treino, validacao, teste = separar_por_municipio(tabela)
+
+    relatorio, modelo_final = treinar_trilha(
+        TRILHA, tabela, CANDIDATOS
+    )
+
+    escolhido = relatorio["modelo_escolhido"]
+    candidato = next(
+        item for item in CANDIDATOS if item.nome == escolhido
+    )
+    parametros = relatorio["candidatos"][escolhido]["melhores_parametros"]
+
+    esperado = montar_pipeline(
+        TRILHA, candidato.estimador, candidato.escalonar
+    )
+    esperado.set_params(**parametros)
+    esperado.fit(
+        pd.concat(
+            [treino.atributos, validacao.atributos],
+            ignore_index=True,
+        ),
+        pd.concat(
+            [treino.alvo, validacao.alvo],
+            ignore_index=True,
+        ),
+    )
+
+    np.testing.assert_allclose(
+        modelo_final.predict_proba(teste.atributos),
+        esperado.predict_proba(teste.atributos),
+        rtol=1e-10,
+        atol=1e-10,
+    )
 
 
 def test_relatorio_vira_json_e_se_repete_entre_execucoes() -> None:
@@ -121,23 +180,101 @@ def test_gravar_relatorio_escreve_o_json_e_a_tabela_de_comparacao(tmp_path) -> N
     assert list(comparacao["modelo"]) == [linha["modelo"] for linha in relatorio["comparacao"]]
 
 
+def test_relatorio_converte_valores_nao_finitos_em_null() -> None:
+    entrada = {
+        "razao_erro": float("inf"),
+        "outros": [
+            float("-inf"),
+            float("nan"),
+            np.float64("inf"),
+        ],
+        "auc": 0.751234,
+        "overfitting": True,
+    }
+
+    resultado = _arredondar(entrada)
+
+    assert resultado == {
+        "razao_erro": None,
+        "outros": [None, None, None],
+        "auc": 0.7512,
+        "overfitting": True,
+    }
+    json.dumps(resultado, allow_nan=False)
+
+
+def test_atributos_do_teste_nao_influenciam_a_selecao_do_modelo() -> None:
+    original = _tabela()
+    _, _, teste = separar_por_municipio(original)
+
+    atributos_alterados = original.atributos.copy()
+    mascara_teste = original.grupos.isin(teste.grupos)
+
+    atributos_alterados.loc[mascara_teste, "x"] = 100.0
+    atributos_alterados.loc[mascara_teste, "cor"] = "inedita"
+
+    alterada = TabelaModelagem(
+        atributos=atributos_alterados,
+        alvo=original.alvo.copy(),
+        grupos=original.grupos.copy(),
+    )
+
+    antes, _ = treinar_trilha(TRILHA, original, CANDIDATOS)
+    depois, _ = treinar_trilha(TRILHA, alterada, CANDIDATOS)
+
+    for campo in (
+        "baselines",
+        "candidatos",
+        "comparacao",
+        "modelo_escolhido",
+        "validacao",
+    ):
+        assert antes[campo] == depois[campo], campo
+
+    assert antes["teste"] != depois["teste"]
+
+
 def test_modelo_gravado_e_carregado_preve_igual_ao_original(tmp_path) -> None:
     tabela = _tabela()
     _, modelo = treinar_trilha(TRILHA, tabela, CANDIDATOS)
+
     caminho = gravar_modelo(modelo, "teste", tmp_path)
     carregado = carregar_modelo("teste", tmp_path)
+
     assert caminho.exists()
-    assert np.allclose(modelo.predict_proba(tabela.atributos)[:, 1], carregado.predict_proba(tabela.atributos)[:, 1])
+    np.testing.assert_allclose(
+        modelo.predict_proba(tabela.atributos),
+        carregado.predict_proba(tabela.atributos),
+    )
 
 
 def test_carregar_modelo_inexistente_explica_como_gerar(tmp_path) -> None:
-    with pytest.raises(FileNotFoundError, match="python -m src.modeling.treino_"):
+    with pytest.raises(
+        FileNotFoundError,
+        match="python -m src.modeling.treino_",
+    ):
         carregar_modelo("inexistente", tmp_path)
 
 
 def test_conjunto_de_teste_e_o_mesmo_que_o_treino_avaliou() -> None:
     tabela = _tabela()
-    relatorio, _ = treinar_trilha(TRILHA, tabela, CANDIDATOS, max_linhas_treino=200, max_linhas_validacao=100)
+    relatorio, modelo = treinar_trilha(
+        TRILHA,
+        tabela,
+        CANDIDATOS,
+        max_linhas_treino=200,
+        max_linhas_validacao=100,
+    )
+
     teste = conjunto_de_teste(tabela)
+    probabilidades = modelo.predict_proba(teste.atributos)[:, 1]
+    metricas = calcular_metricas(teste.alvo, probabilidades)
+
     assert len(teste.alvo) == relatorio["tamanhos"]["teste"]["linhas"]
     assert teste.grupos.nunique() == relatorio["tamanhos"]["teste"]["municipios"]
+    assert metricas["matriz_confusao"] == relatorio["teste"]["matriz_confusao"]
+
+    esperado = separar_por_municipio(tabela)[2]
+    pd.testing.assert_frame_equal(teste.atributos, esperado.atributos)
+    pd.testing.assert_series_equal(teste.alvo, esperado.alvo)
+    pd.testing.assert_series_equal(teste.grupos, esperado.grupos)
