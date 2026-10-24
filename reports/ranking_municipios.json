@@ -1,0 +1,340 @@
+{
+  "escopo_t2": "meta de 2024; sem validação temporal",
+  "escopo_t1": "registros com caderno preenchido, agregados de 2023 e 2024; não identifica alunos únicos entre anos",
+  "municipios_no_ranking_taxa_observada": 5134,
+  "mediana_registros_t1_incluidos": 236.0,
+  "dez_maiores_taxas_observadas": [
+    {
+      "nome": "Macururé",
+      "sigla_uf": "BA",
+      "n_alunos": 83,
+      "taxa_nao_alfabetizados_real": 0.9157
+    },
+    {
+      "nome": "Filadélfia",
+      "sigla_uf": "TO",
+      "n_alunos": 138,
+      "taxa_nao_alfabetizados_real": 0.8768
+    },
+    {
+      "nome": "Pedrinhas",
+      "sigla_uf": "SE",
+      "n_alunos": 116,
+      "taxa_nao_alfabetizados_real": 0.8707
+    },
+    {
+      "nome": "Buritirama",
+      "sigla_uf": "BA",
+      "n_alunos": 282,
+      "taxa_nao_alfabetizados_real": 0.8582
+    },
+    {
+      "nome": "Barra do Ouro",
+      "sigla_uf": "TO",
+      "n_alunos": 148,
+      "taxa_nao_alfabetizados_real": 0.8581
+    },
+    {
+      "nome": "Santa Rosa do Purus",
+      "sigla_uf": "AC",
+      "n_alunos": 58,
+      "taxa_nao_alfabetizados_real": 0.8448
+    },
+    {
+      "nome": "Arataca",
+      "sigla_uf": "BA",
+      "n_alunos": 133,
+      "taxa_nao_alfabetizados_real": 0.8421
+    },
+    {
+      "nome": "Muribeca",
+      "sigla_uf": "SE",
+      "n_alunos": 75,
+      "taxa_nao_alfabetizados_real": 0.84
+    },
+    {
+      "nome": "Poço Branco",
+      "sigla_uf": "RN",
+      "n_alunos": 156,
+      "taxa_nao_alfabetizados_real": 0.8397
+    },
+    {
+      "nome": "Casa Nova",
+      "sigla_uf": "BA",
+      "n_alunos": 1095,
+      "taxa_nao_alfabetizados_real": 0.8356
+    }
+  ],
+  "ufs_cobertas_t2": [
+    "AL",
+    "AM",
+    "AP",
+    "BA",
+    "CE",
+    "ES",
+    "GO",
+    "MA",
+    "MG",
+    "MS",
+    "MT",
+    "PA",
+    "PB",
+    "PE",
+    "PI",
+    "PR",
+    "RJ",
+    "RN",
+    "RO",
+    "RS",
+    "SC",
+    "SE",
+    "SP",
+    "TO"
+  ],
+  "ufs_ausentes_t2": [
+    "AC",
+    "DF",
+    "RR"
+  ],
+  "municipios_no_ranking_de_meta": 5226,
+  "auc_roc_fora_da_dobra_t2": 0.7768,
+  "auc_roc_fora_da_dobra_t1": 0.6276,
+  "municipios_no_ranking_abaixo_do_perfil": 5134,
+  "minimo_alunos_abaixo_do_perfil": 50,
+  "dez_maiores_riscos_de_meta": [
+    {
+      "nome": "Dom Macedo Costa",
+      "sigla_uf": "BA",
+      "prob_nao_atingir_meta": 0.9733
+    },
+    {
+      "nome": "Vereda",
+      "sigla_uf": "BA",
+      "prob_nao_atingir_meta": 0.9721
+    },
+    {
+      "nome": "Paim Filho",
+      "sigla_uf": "RS",
+      "prob_nao_atingir_meta": 0.9681
+    },
+    {
+      "nome": "Cordeiros",
+      "sigla_uf": "BA",
+      "prob_nao_atingir_meta": 0.9678
+    },
+    {
+      "nome": "Salto do Jacuí",
+      "sigla_uf": "RS",
+      "prob_nao_atingir_meta": 0.9665
+    },
+    {
+      "nome": "Riozinho",
+      "sigla_uf": "RS",
+      "prob_nao_atingir_meta": 0.966
+    },
+    {
+      "nome": "Cerrito",
+      "sigla_uf": "RS",
+      "prob_nao_atingir_meta": 0.9651
+    },
+    {
+      "nome": "São Martinho da Serra",
+      "sigla_uf": "RS",
+      "prob_nao_atingir_meta": 0.9646
+    },
+    {
+      "nome": "São Lourenço do Sul",
+      "sigla_uf": "RS",
+      "prob_nao_atingir_meta": 0.9637
+    },
+    {
+      "nome": "Canguçu",
+      "sigla_uf": "RS",
+      "prob_nao_atingir_meta": 0.9636
+    }
+  ],
+  "dez_mais_abaixo_do_perfil": [
+    {
+      "nome": "Filadélfia",
+      "sigla_uf": "TO",
+      "n_alunos": 138,
+      "excesso_nao_alfabetizados": 0.3806
+    },
+    {
+      "nome": "Morro Cabeça no Tempo",
+      "sigla_uf": "PI",
+      "n_alunos": 106,
+      "excesso_nao_alfabetizados": 0.3757
+    },
+    {
+      "nome": "Cuité de Mamanguape",
+      "sigla_uf": "PB",
+      "n_alunos": 95,
+      "excesso_nao_alfabetizados": 0.366
+    },
+    {
+      "nome": "Santa Rosa do Purus",
+      "sigla_uf": "AC",
+      "n_alunos": 58,
+      "excesso_nao_alfabetizados": 0.3552
+    },
+    {
+      "nome": "São José do Bonfim",
+      "sigla_uf": "PB",
+      "n_alunos": 58,
+      "excesso_nao_alfabetizados": 0.3498
+    },
+    {
+      "nome": "Barra do Ouro",
+      "sigla_uf": "TO",
+      "n_alunos": 148,
+      "excesso_nao_alfabetizados": 0.3457
+    },
+    {
+      "nome": "Porto de Pedras",
+      "sigla_uf": "AL",
+      "n_alunos": 268,
+      "excesso_nao_alfabetizados": 0.3398
+    },
+    {
+      "nome": "Lagoa do Tocantins",
+      "sigla_uf": "TO",
+      "n_alunos": 114,
+      "excesso_nao_alfabetizados": 0.3312
+    },
+    {
+      "nome": "Francisco Dumont",
+      "sigla_uf": "MG",
+      "n_alunos": 70,
+      "excesso_nao_alfabetizados": 0.3168
+    },
+    {
+      "nome": "Babaçulândia",
+      "sigla_uf": "TO",
+      "n_alunos": 166,
+      "excesso_nao_alfabetizados": 0.314
+    }
+  ],
+  "proporcao_quintil_5_por_uf": [
+    {
+      "sigla_uf": "RS",
+      "municipios": 420,
+      "proporcao_quintil_5": 0.9881
+    },
+    {
+      "sigla_uf": "BA",
+      "municipios": 394,
+      "proporcao_quintil_5": 0.8756
+    },
+    {
+      "sigla_uf": "AM",
+      "municipios": 48,
+      "proporcao_quintil_5": 0.6875
+    },
+    {
+      "sigla_uf": "PA",
+      "municipios": 136,
+      "proporcao_quintil_5": 0.4853
+    },
+    {
+      "sigla_uf": "RJ",
+      "municipios": 90,
+      "proporcao_quintil_5": 0.2778
+    },
+    {
+      "sigla_uf": "AP",
+      "municipios": 16,
+      "proporcao_quintil_5": 0.25
+    },
+    {
+      "sigla_uf": "RN",
+      "municipios": 139,
+      "proporcao_quintil_5": 0.2086
+    },
+    {
+      "sigla_uf": "PB",
+      "municipios": 220,
+      "proporcao_quintil_5": 0.1364
+    },
+    {
+      "sigla_uf": "AL",
+      "municipios": 102,
+      "proporcao_quintil_5": 0.1078
+    },
+    {
+      "sigla_uf": "TO",
+      "municipios": 137,
+      "proporcao_quintil_5": 0.1022
+    },
+    {
+      "sigla_uf": "MA",
+      "municipios": 216,
+      "proporcao_quintil_5": 0.0926
+    },
+    {
+      "sigla_uf": "SE",
+      "municipios": 75,
+      "proporcao_quintil_5": 0.0667
+    },
+    {
+      "sigla_uf": "SP",
+      "municipios": 620,
+      "proporcao_quintil_5": 0.0371
+    },
+    {
+      "sigla_uf": "PI",
+      "municipios": 222,
+      "proporcao_quintil_5": 0.036
+    },
+    {
+      "sigla_uf": "PR",
+      "municipios": 395,
+      "proporcao_quintil_5": 0.0329
+    },
+    {
+      "sigla_uf": "RO",
+      "municipios": 52,
+      "proporcao_quintil_5": 0.0192
+    },
+    {
+      "sigla_uf": "SC",
+      "municipios": 238,
+      "proporcao_quintil_5": 0.0126
+    },
+    {
+      "sigla_uf": "CE",
+      "municipios": 183,
+      "proporcao_quintil_5": 0.0
+    },
+    {
+      "sigla_uf": "ES",
+      "municipios": 78,
+      "proporcao_quintil_5": 0.0
+    },
+    {
+      "sigla_uf": "GO",
+      "municipios": 242,
+      "proporcao_quintil_5": 0.0
+    },
+    {
+      "sigla_uf": "MG",
+      "municipios": 801,
+      "proporcao_quintil_5": 0.0
+    },
+    {
+      "sigla_uf": "MS",
+      "municipios": 79,
+      "proporcao_quintil_5": 0.0
+    },
+    {
+      "sigla_uf": "MT",
+      "municipios": 139,
+      "proporcao_quintil_5": 0.0
+    },
+    {
+      "sigla_uf": "PE",
+      "municipios": 184,
+      "proporcao_quintil_5": 0.0
+    }
+  ]
+}

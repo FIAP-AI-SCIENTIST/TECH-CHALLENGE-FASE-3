@@ -10,7 +10,7 @@ Três leituras do mesmo modelo, todas sobre o **conjunto de teste** (dados que o
 |---|---|---|
 | Importância nativa | Coeficiente da Regressão Logística (com sinal, na escala padronizada) ou `feature_importances_` das árvores | Uma linha por coluna do One-Hot (`sigla_uf_BA`) |
 | Permutação | Queda da AUC-ROC quando a coluna original é embaralhada (10 repetições) | Uma linha por atributo original (`sigla_uf` inteira) |
-| SHAP | Contribuição de cada atributo para cada previsão, em log-odds do risco; o gráfico de barras soma as colunas One-Hot de cada atributo antes do módulo | As duas formas |
+| SHAP | Contribuição de cada atributo para cada previsão, na escala do algoritmo; o gráfico de barras soma as colunas One-Hot de cada atributo antes do módulo | As duas formas |
 
 A permutação mede a queda de AUC-ROC de cada atributo original. Os coeficientes da Regressão Logística preservam o sinal; a importância nativa das árvores não informa direção. O SHAP informa contribuições por previsão: em log-odds na Regressão Logística e no Gradient Boosting, e em probabilidade na Random Forest. As unidades não devem ser comparadas diretamente entre algoritmos.
 
@@ -30,7 +30,7 @@ No teste de T1, a permutação usa 20 mil alunos e o SHAP 2 mil; em T2 entram os
 | `media_portugues_2023` | 0,081 | 0,67 |
 | `idhm_renda` | 0,069 | 0,60 |
 | `taxa_alfabetizacao_2023` | 0,063 | 0,56 |
-| `nome_regiao` | 0,040 | 0,40 |
+| `nome_regiao` | 0,040 | 0,41 |
 | `folga_2023` | 0,016 | 0,25 |
 | `idhm_longevidade` | 0,008 | 0,13 |
 | `capital_uf` | 0,000 | 0,00 |
