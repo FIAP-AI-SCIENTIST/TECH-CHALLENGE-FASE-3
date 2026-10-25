@@ -45,10 +45,7 @@ Matriz de confusão no teste: 425 verdadeiros negativos, 143 falsos positivos, 1
 
 ## Ressalva: associação com a UF e limites da avaliação
 
-A análise territorial usa somente os 3.135 municípios do treino,
-com Regressão Logística padrão e cinco dobras. Os resultados são
-gerados pelo script e registrados no bloco `analise_uf` de
-`reports/treino_t2.json`.
+A análise territorial usa somente os 3.135 municípios do treino, com Regressão Logística padrão e cinco dobras. Os resultados são gerados pelo script e registrados no bloco `analise_uf` de `reports/treino_t2.json`.
 
 | Verificação | AUC-ROC média | Desvio entre dobras |
 |---|---|---|
@@ -56,32 +53,23 @@ gerados pelo script e registrados no bloco `analise_uf` de
 | Demais atributos, sem UF e região; agrupamento por município | 0,640 | 0,027 |
 | Todos os atributos; agrupamento por UF | 0,587 | 0,074 |
 
-Os resultados sugerem uma associação relevante entre UF e cumprimento
-das metas nesta base. Não demonstram um efeito causal do estado nem
-quantificam uma contribuição exclusiva da UF.
+Os resultados sugerem uma associação relevante entre UF e cumprimento das metas nesta base. Não demonstram um efeito causal do estado nem quantificam uma contribuição exclusiva da UF.
 
-Na avaliação agrupada por UF, as AUCs variaram de 0,445 a 0,660.
-O desvio apresentado mede a variação entre dobras; não é um intervalo
-de confiança.
+Nos municípios com rótulo disponível em 2024, 16 dos 183 municípios do Ceará (8,7%) não atingiram a meta, contra 381 dos 420 municípios do Rio Grande do Sul (90,7%). Essa comparação descreve os resultados observados na base utilizada; não representa probabilidades previstas pelo modelo nem demonstra um efeito causal do estado.
 
-A avaliação final por município apresentou AUC-ROC de 0,7955 no teste.
-Ela avalia municípios separados do treino, mas pertencentes ao mesmo
-ano dos rótulos, 2024. Não comprova desempenho em anos futuros.
+Na avaliação agrupada por UF, as AUCs variaram de 0,445 a 0,660. O desvio apresentado mede a variação entre dobras; não é um intervalo de confiança.
 
-Separar estados inteiros avalia transferência entre UFs, não entre
-anos. Portanto, a AUC média de 0,587 não deve ser apresentada como
-estimativa de desempenho futuro.
+A avaliação final por município apresentou AUC-ROC de 0,7955 no teste. Ela avalia municípios separados do treino, mas pertencentes ao mesmo ano dos rótulos, 2024. Não comprova desempenho em anos futuros.
 
-Os atributos incluem a meta de 2024, considerada conhecida antes do
-resultado, e a folga calculada a partir dela e da taxa de 2023.
-A taxa de alfabetização de 2024 não é usada como atributo.
+Separar estados inteiros avalia transferência entre UFs, não entre anos. Portanto, a AUC média de 0,587 não deve ser apresentada como estimativa de desempenho futuro.
 
-Como há apenas um ano com rótulo municipal disponível, a generalização
-temporal permanece sem validação.
+Os atributos incluem a meta de 2024, considerada conhecida antes do resultado, e a folga calculada a partir dela e da taxa de 2023. A taxa de alfabetização de 2024 não é usada como atributo.
+
+Como há apenas um ano com rótulo municipal disponível, a generalização temporal permanece sem validação.
 
 ## Ambiente de reprodução
 
-Os relatórios desta revisão foram regenerados em:
+Os relatórios publicados foram gerados no seguinte ambiente:
 
 - Windows 11, arquitetura AMD64;
 - Python 3.13.13;
@@ -90,31 +78,16 @@ Os relatórios desta revisão foram regenerados em:
 - pandas 3.0.6;
 - SciPy 1.18.1.
 
-Esse registro descreve a execução atual, não o ambiente que gerou
-a primeira versão do relatório.
+Também foi verificada a execução em macOS ARM64 com Python 3.12. O modelo escolhido e as métricas de validação e teste coincidiram; algumas métricas de validação cruzada das árvores apresentaram diferenças na quarta casa decimal entre ambientes.
 
-A semente controla as fontes de aleatoriedade configuradas no código,
-mas não garante resultados idênticos entre sistemas, arquiteturas
-e implementações numéricas diferentes. O arredondamento também não
-garante igualdade entre ambientes.
+A semente controla as fontes de aleatoriedade configuradas no código, mas não garante resultados numericamente idênticos entre sistemas, arquiteturas e implementações numéricas diferentes. O arredondamento também não garante igualdade entre ambientes.
 
-O revisor relatou pequenas diferenças em métricas das árvores ao
-executar em macOS ARM64. Nesta revisão, a busca da Random Forest
-também mudou de aleatória para completa; portanto, a mudança dos
-resultados da floresta não deve ser atribuída apenas ao ambiente.
-
-Os números das tabelas correspondem aos relatórios regenerados
-no ambiente registrado acima.
+Os números das tabelas correspondem aos relatórios gerados no ambiente Windows descrito acima. Comparações entre execuções devem considerar também a configuração da busca de hiperparâmetros; a Random Forest utiliza busca em grade com 24 combinações.
 
 ## Organização do protocolo
 
-`src/modeling/treino.py` atua como orquestrador do experimento:
-coordena a preparação dos conjuntos, o treinamento, a avaliação
-e a gravação dos relatórios.
+`src/modeling/treino.py` atua como orquestrador do experimento: coordena a preparação dos conjuntos, o treinamento, a avaliação e a gravação dos relatórios.
 
-Por essa responsabilidade, ele importa funções de `evaluation`,
-como exceção documentada à direção de dependências adotada no projeto.
-Os cálculos de métricas e diagnóstico permanecem em `evaluation`.
+Por essa responsabilidade, ele importa funções de `evaluation`, como exceção documentada à direção de dependências adotada no projeto. Os cálculos de métricas e diagnóstico permanecem em `evaluation`.
 
-Essa escolha preserva o ponto de entrada compartilhado pelas trilhas
-supervisionadas, sem mover módulos usados pelas PRs dependentes.
+Essa escolha preserva o ponto de entrada compartilhado pelas trilhas supervisionadas, sem mover módulos usados pelas PRs dependentes.
