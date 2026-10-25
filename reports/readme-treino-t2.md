@@ -81,7 +81,7 @@ temporal permanece sem validação.
 
 ## Ambiente de reprodução
 
-Os relatórios desta revisão foram regenerados em:
+Os relatórios publicados foram gerados no seguinte ambiente:
 
 - Windows 11, arquitetura AMD64;
 - Python 3.13.13;
@@ -90,21 +90,11 @@ Os relatórios desta revisão foram regenerados em:
 - pandas 3.0.6;
 - SciPy 1.18.1.
 
-Esse registro descreve a execução atual, não o ambiente que gerou
-a primeira versão do relatório.
+Também foi verificada a execução em macOS ARM64 com Python 3.12. O modelo escolhido e as métricas de validação e teste coincidiram; algumas métricas de validação cruzada das árvores apresentaram diferenças na quarta casa decimal entre ambientes.
 
-A semente controla as fontes de aleatoriedade configuradas no código,
-mas não garante resultados idênticos entre sistemas, arquiteturas
-e implementações numéricas diferentes. O arredondamento também não
-garante igualdade entre ambientes.
+A semente controla as fontes de aleatoriedade configuradas no código, mas não garante resultados numericamente idênticos entre sistemas, arquiteturas e implementações numéricas diferentes. O arredondamento também não garante igualdade entre ambientes.
 
-O revisor relatou pequenas diferenças em métricas das árvores ao
-executar em macOS ARM64. Nesta revisão, a busca da Random Forest
-também mudou de aleatória para completa; portanto, a mudança dos
-resultados da floresta não deve ser atribuída apenas ao ambiente.
-
-Os números das tabelas correspondem aos relatórios regenerados
-no ambiente registrado acima.
+Os números das tabelas correspondem aos relatórios gerados no ambiente Windows descrito acima. Comparações entre execuções devem considerar também a configuração da busca de hiperparâmetros; a Random Forest utiliza busca em grade com 24 combinações.
 
 ## Organização do protocolo
 
