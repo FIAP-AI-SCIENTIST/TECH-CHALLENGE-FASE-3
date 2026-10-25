@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.base import clone
 
 from src.config import ColunasTrilha
 from src.modeling.pipeline_modelo import montar_pipeline
@@ -139,7 +140,7 @@ def test_modelo_final_corresponde_ao_reajuste_em_treino_e_validacao() -> None:
     parametros = relatorio["candidatos"][escolhido]["melhores_parametros"]
 
     esperado = montar_pipeline(
-        TRILHA, candidato.estimador, candidato.escalonar
+        TRILHA, clone(candidato.estimador), candidato.escalonar
     )
     esperado.set_params(**parametros)
     esperado.fit(
