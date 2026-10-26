@@ -51,18 +51,20 @@ T1 não acompanha a trajetória do mesmo aluno ao longo do tempo. Rede e caderno
 | Componente | Estado |
 |---|---|
 | Snapshot da Gold, leitor, exportador e dicionário | Implementados |
-| Análise exploratória e hipóteses | Disponíveis no notebook |
+| Análise exploratória e hipóteses | Disponíveis em [02_eda.ipynb](notebooks/02_eda.ipynb) |
+| Experimentos de modelagem de T2 documentados em notebook | [03_modelagem_municipios.ipynb](notebooks/03_modelagem_municipios.ipynb), executado do zero sem erros |
 | Preparação, modelos, otimização e validação | Implementadas |
 | Avaliação, interpretação, agrupamento e rankings | Implementados, com relatórios e figuras |
 | Respostas de negócio | Sintetizadas neste README, com limites de interpretação |
-| Ensaio integral de reprodução em ambiente novo | Pendente de fechamento da entrega |
+| Testes automatizados | 257 testes passam em Python 3.12 (macOS ARM64), em ambiente criado do zero com o `requirements.txt` |
+| Ensaio integral de reprodução em ambiente novo | Parcial: testes e notebook 03 foram executados; o retreino completo (T1 e T2) e os notebooks 01 e 02 não foram reexecutados |
 | Vídeo executivo | Pendente de gravação e link |
 
 ## Estrutura do repositório
 
 ```text
 data/                     snapshot da Gold em Parquet e documentação da origem
-notebooks/                esqueleto histórico e análise exploratória
+notebooks/                01 esqueleto histórico, 02 análise exploratória, 03 modelagem de T2
 src/
   config.py               caminhos, semente e colunas das trilhas
   preprocessing/          leitura, qualidade, tabelas e pré-processamento
@@ -137,7 +139,9 @@ Os comandos abaixo treinam e sobrescrevem o modelo e o relatório de cada trilha
 
 Após o treinamento, execute novamente avaliação, interpretação e ranking para manter seus artefatos alinhados. O agrupamento usa o snapshot e não depende dos modelos supervisionados.
 
-Para regenerar o dicionário, use `python -m src.preprocessing.qualidade` com o Python do ambiente. Abra [02_eda.ipynb](notebooks/02_eda.ipynb) no editor Jupyter, selecione o ambiente virtual e execute as células em ordem. A primeira célula pressupõe o diretório de trabalho `notebooks/`; ajuste o diretório do kernel se o editor iniciar na raiz. Não foi realizado um novo ensaio integral dos notebooks nesta atualização documental.
+Para regenerar o dicionário, use `python -m src.preprocessing.qualidade` com o Python do ambiente. Abra [02_eda.ipynb](notebooks/02_eda.ipynb) no editor Jupyter, selecione o ambiente virtual e execute as células em ordem. A primeira célula pressupõe o diretório de trabalho `notebooks/`; ajuste o diretório do kernel se o editor iniciar na raiz. O notebook [03_modelagem_municipios.ipynb](notebooks/03_modelagem_municipios.ipynb) segue o mesmo procedimento e reproduz, com os módulos do projeto, a modelagem de T2 (tabela, divisão por município, validação cruzada agrupada, comparação de modelos, avaliação em validação e teste e permutação). Ele foi executado do zero em Python 3.12, sem erros, e duas execuções seguidas deram resultados idênticos. Os notebooks 01 e 02 não foram reexecutados nesta atualização.
+
+Os notebooks usam `python3` como kernel e importam `src`, então devem ser abertos com a raiz do projeto como diretório de trabalho (o 02 pressupõe `notebooks/`). Para executar o 03 fora do editor, é preciso instalar `nbclient` com `nbformat` (já presentes no `requirements.txt`) e um kernel `python3` do ambiente virtual.
 
 ### Atualizar o snapshot da Gold
 
@@ -179,6 +183,19 @@ O snapshot preserva a versão usada e permite execução sem credenciais; não a
 Em T1, o treino completo tem 1.971.880 registros e a validação 755.768. Para limitar o custo, usam-se amostras de **100.000** e **50.000**, sorteadas após separar municípios. O reajuste final usa essas amostras reunidas (**150.000 registros**), enquanto o teste usa todos os **627.013 registros** reservados. Em T2 não há amostragem: treino de 3.135 municípios, validação de 1.045 e teste de 1.046.
 
 O diagnóstico adotado sinaliza overfitting quando a razão de erros `(1 − AUC de avaliação) / (1 − AUC de treino)` é pelo menos 2. Ele é um critério do projeto, não uma garantia universal de ausência de overfitting. Detalhes: [pré-processamento](reports/readme-escalonamento.md), [treino T1](reports/readme-treino-t1.md) e [treino T2](reports/readme-treino-t2.md).
+
+### Notebook de modelagem de T2
+
+[03_modelagem_municipios.ipynb](notebooks/03_modelagem_municipios.ipynb) documenta, passo a passo e com saídas, a modelagem do risco de não atingir a meta de 2024. É uma reprodução didática e simplificada, feita com os módulos de `src/`: usa a Regressão Logística padrão do protocolo, enquanto os números oficiais deste README vêm de [treino_t2.json](reports/treino_t2.json), com `C=10`. Por isso as diferenças são pequenas e esperadas.
+
+| Etapa | Resultado no notebook |
+|---|---|
+| Validação cruzada (5 dobras agrupadas por município, só no treino) | Dummy 0,500; Regressão Logística 0,780 (desvio 0,015, treino 0,790); Random Forest padrão 0,755 (treino 1,000); Random Forest regularizada 0,769 (treino 0,837) |
+| Validação | AUC-ROC 0,7519; precisão 0,6751; recall 0,6571; F1 0,6660 |
+| Teste (modelo reajustado em treino + validação) | AUC-ROC 0,7964; AUC-PR 0,7681; precisão 0,6897; recall 0,6695; F1 0,6794 |
+| Permutação na validação (10 repetições) | UF 0,1697; meta 2024 0,0863; média de Português 2023 0,0835; taxa 2023 0,0441; região 0,0333 |
+
+O Random Forest padrão com AUC-ROC de treino igual a 1,000 e validação menor ilustra o sobreajuste que o diagnóstico procura detectar. A permutação do notebook usa a validação e o relatório oficial de interpretação usa o teste, então os valores diferem; a ordem geral (UF à frente, seguida de atributos de meta e resultados anteriores) é coerente. Tanto o notebook quanto o relatório são descritivos e indicam associação, não causa.
 
 O [baseline provisório](reports/baseline_provisorio.json) e o notebook de esqueleto são registros históricos. Usam população e divisão diferentes e não representam os resultados finais apresentados abaixo.
 
@@ -299,7 +316,7 @@ A priorização precisa combinar os resultados com população atendida, capacid
 | Imputação numérica, transformações, encoding e integração ao modelo | Requisitos do desafio; mediana, One-Hot e as classes utilizadas são escolhas técnicas |
 | Scikit-learn | Biblioteca recomendada no enunciado e adotada no projeto |
 | `Pipeline`, `ColumnTransformer`, `GroupKFold` e `DummyClassifier` | Escolhas de implementação; o PDF não exige individualmente essas classes |
-| Interpretação | Exigida; Feature Importance e SHAP são técnicas recomendadas e foram implementadas |
+| Interpretação | Exigida; Feature Importance e SHAP são técnicas recomendadas e foram implementadas nos relatórios; o notebook 03 mostra a permutação de T2 |
 | Agrupamento | Escolha para responder sobre padrões semelhantes; clustering não é obrigatório no PDF |
 | Semente 42 e classe positiva de risco | Convenções do projeto |
 | Snapshot Parquet e modelos joblib | Permitem execução local sem consultar a cloud nem repetir todo treinamento |
@@ -329,6 +346,8 @@ A execução local não provisiona recursos cloud. Não foram medidos custos mon
 | [Interpretação](reports/readme-interpretacao.md) | Importância nativa, permutação e SHAP |
 | [Agrupamento](reports/readme-agrupamento.md) | PCA, escolha de K, perfis e leitura exploratória K=3 |
 | [Ranking](reports/readme-ranking.md) | Meta, taxa observada, excesso e cobertura |
+| [Notebook 02](notebooks/02_eda.ipynb) | Análise exploratória e hipóteses |
+| [Notebook 03](notebooks/03_modelagem_municipios.ipynb) | Modelagem de T2 executável, com validação cruzada, comparação, teste e permutação |
 
 Os relatórios detalhados preservam informações de cada experimento. Este README reúne a visão da entrega; eventuais contagens e métricas devem ser conferidas nos JSONs e CSVs correspondentes.
 
