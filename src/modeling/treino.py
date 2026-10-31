@@ -186,6 +186,7 @@ def treinar_trilha(
 
 def gravar_relatorio(relatorio: dict[str, Any], prefixo: str, diretorio: Path = DIRETORIO_RELATORIOS) -> tuple[Path, Path]:
     """Grava `treino_<prefixo>.json` e `comparacao_modelos_<prefixo>.csv` e devolve os dois caminhos."""
+    relatorio = _arredondar(relatorio)
     diretorio.mkdir(parents=True, exist_ok=True)
     caminho_json = diretorio / f"treino_{prefixo}.json"
     caminho_json.write_text(json.dumps(relatorio, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

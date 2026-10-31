@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.base import clone
 
 from src.config import ColunasTrilha
 from src.modeling.pipeline_modelo import montar_pipeline
@@ -139,7 +140,7 @@ def test_modelo_final_corresponde_ao_reajuste_em_treino_e_validacao() -> None:
     parametros = relatorio["candidatos"][escolhido]["melhores_parametros"]
 
     esperado = montar_pipeline(
-        TRILHA, candidato.estimador, candidato.escalonar
+        TRILHA, clone(candidato.estimador), candidato.escalonar
     )
     esperado.set_params(**parametros)
     esperado.fit(
@@ -278,3 +279,28 @@ def test_conjunto_de_teste_e_o_mesmo_que_o_treino_avaliou() -> None:
     pd.testing.assert_frame_equal(teste.atributos, esperado.atributos)
     pd.testing.assert_series_equal(teste.alvo, esperado.alvo)
     pd.testing.assert_series_equal(teste.grupos, esperado.grupos)
+
+
+def test_gravar_relatorio_trata_analise_adicionada_depois(tmp_path) -> None:
+    relatorio = {
+        "comparacao": [{"modelo": "exemplo"}],
+        "analise_uf": {
+            "auc_roc_media": 0.730687322,
+            "razao_erro": float("inf"),
+            "outros": [float("nan"), float("-inf")],
+        },
+    }
+
+    caminho_json, _ = gravar_relatorio(
+        relatorio,
+        "teste",
+        diretorio=tmp_path,
+    )
+
+    gravado = json.loads(caminho_json.read_text(encoding="utf-8"))
+
+    assert gravado["analise_uf"] == {
+        "auc_roc_media": 0.7307,
+        "razao_erro": None,
+        "outros": [None, None],
+    }
