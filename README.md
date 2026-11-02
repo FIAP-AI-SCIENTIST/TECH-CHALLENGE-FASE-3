@@ -4,7 +4,7 @@ Tech Challenge da Fase 3 da pós-graduação em AI Scientist da FIAP (Pós Tech)
 
 **Resultado principal:** o modelo de classificação do aluno, Gradient Boosting, apresentou AUC-ROC de **0,6317** no teste. O modelo complementar de município, Regressão Logística, apresentou **0,7955** para o risco de não atingir a meta de 2024. Esses resultados avaliam tarefas e populações diferentes; não devem ser comparados como se fossem o mesmo problema.
 
-Os modelos, gráficos, interpretações e rankings estão implementados. A previsão para anos futuros permanece sem validação temporal. **O vídeo executivo de até cinco minutos ainda está pendente.**
+Os modelos, gráficos, interpretações e rankings estão implementados. A previsão para anos futuros permanece sem validação temporal. O [vídeo executivo está disponível no YouTube](https://www.youtube.com/watch?v=cXv-2i0Rm7Q).
 
 ## Sumário
 
@@ -58,7 +58,7 @@ T1 não acompanha a trajetória do mesmo aluno ao longo do tempo. Rede e caderno
 | Respostas de negócio | Sintetizadas neste README, com limites de interpretação |
 | Testes automatizados | 257 testes passam em Python 3.12 (macOS ARM64), em ambiente criado do zero com o `requirements.txt` |
 | Ensaio integral de reprodução em ambiente novo | Parcial: testes e notebook 03 foram executados; o retreino completo (T1 e T2) e os notebooks 01 e 02 não foram reexecutados |
-| Vídeo executivo | Pendente de gravação e link |
+| Vídeo executivo | [Disponível no YouTube](https://www.youtube.com/watch?v=cXv-2i0Rm7Q) |
 
 ## Estrutura do repositório
 
@@ -359,4 +359,4 @@ Ambientes virtuais e credenciais ficam fora do Git. A execução do snapshot dis
 
 ## Vídeo executivo
 
-**Pendente de gravação e publicação do link.** A entrega ainda precisa do vídeo de até cinco minutos. O roteiro deve apresentar o problema educacional, os principais insights, o valor estratégico, o apoio possível às políticas públicas e os limites dos modelos, em linguagem para gestores. Nenhum link de vídeo está disponível neste repositório neste momento.
+[Assista à apresentação executiva do projeto no YouTube](https://www.youtube.com/watch?v=cXv-2i0Rm7Q).
