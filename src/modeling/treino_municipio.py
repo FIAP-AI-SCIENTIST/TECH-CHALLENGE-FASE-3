@@ -16,14 +16,12 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from src.config import COLUNAS_T2, SEED
+from src.modeling.pipeline_modelo import montar_pipeline
+from src.modeling.separacao import separar_por_municipio
 from src.modeling.treino import Candidato, gravar_modelo, gravar_relatorio, treinar_trilha
+from src.modeling.validacao_cruzada import N_DOBRAS_PADRAO, validar_com_cv
 from src.preprocessing.loader import carregar_tabela
 from src.preprocessing.tabelas import TabelaModelagem, construir_tabela_municipio
-
-
-from src.modeling.pipeline_modelo import montar_pipeline
-from src.modeling.validacao_cruzada import validar_com_cv
-from src.modeling.separacao import separar_por_municipio
 
 PREFIXO_RELATORIO: str = "t2"
 
@@ -72,7 +70,7 @@ def carregar_tabela_t2() -> TabelaModelagem:
 
 def analisar_sinal_uf(
     treino: TabelaModelagem,
-    n_dobras: int = 5,
+    n_dobras: int = N_DOBRAS_PADRAO,
 ) -> dict:
     """Compara o sinal territorial usando somente a tabela de treino recebida.
 
